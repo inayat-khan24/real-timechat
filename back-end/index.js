@@ -2,7 +2,7 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-import { router } from "./routes/authRoutes";
+import authRoutes  from "./routes/authRoutes.js";
 
 
 const app = express();
@@ -32,7 +32,7 @@ io.on("connection", (socket) => {
 app.get("/", (req, res) => res.send("Socket.IO server running"));
 
 // auth Api 
-app.use("/api/auth", router);
+app.use("/api/auth", authRoutes);
 
 server.listen(5000, () => {
   console.log("Server running on http://localhost:5000");
