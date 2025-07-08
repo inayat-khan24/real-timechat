@@ -5,18 +5,31 @@ import axios from "axios";
 const socket = io("http://localhost:5000");
 
 const PrivateChat = ({ username }) => {
-  const [allUsers, setAllUsers] = useState(["Alice", "Bob", "Charlie"]);
+  const [allUsers, setAllUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [privateChat, setPrivateChat] = useState([]);
   const [message, setMessage] = useState("");
 
-  // Join private room & load messages
+
+  // ✅ Fetch all users from backend
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/getalluser");
+      const result = await res.json();
+  
+        setAllUsers(result.user);
+    
+    } catch (error) {
+      console.error("Failed to fetch users", error);
+    }
+  };
+
+  // ✅ Join room and load previous chat
   useEffect(() => {
     if (selectedUser) {
       const roomId = [username, selectedUser].sort().join("_");
       socket.emit("joinRoom", roomId);
 
-      // Load old messages from MongoDB
       axios
         .get(`http://localhost:5000/api/private/chat/${username}/${selectedUser}`)
         .then((res) => setPrivateChat(res.data))
@@ -24,15 +37,23 @@ const PrivateChat = ({ username }) => {
     }
   }, [selectedUser, username]);
 
-  // Listen for private messages
+  // ✅ Listen to incoming private messages
   useEffect(() => {
     socket.on("receivePrivateMessage", (msg) => {
       setPrivateChat((prev) => [...prev, msg]);
     });
 
-    return () => socket.off("receivePrivateMessage");
+    return () => {
+      socket.off("receivePrivateMessage");
+    };
   }, []);
 
+  // ✅ Load users on first load
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // ✅ Send private message
   const sendPrivateMessage = async () => {
     if (!selectedUser || !message.trim()) return;
 
@@ -61,19 +82,20 @@ const PrivateChat = ({ username }) => {
         {/* Sidebar with user list */}
         <div className="w-1/3 border-r p-4">
           <h2 className="text-xl font-bold mb-4">Users</h2>
-          {allUsers
-            .filter((u) => u !== username)
-            .map((user, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedUser(user)}
-                className={`block w-full text-left p-2 rounded ${
-                  selectedUser === user ? "bg-blue-200" : "hover:bg-gray-200"
-                }`}
-              >
-                {user}
-              </button>
-            ))}
+        {allUsers
+  .filter((u) => u.username !== username)
+  .map((user, idx) => (
+    <button
+      key={idx}
+      onClick={() => setSelectedUser(user.username)} // we only use username for chat
+      className={`block w-full text-left p-2 rounded ${
+        selectedUser === user.username ? "bg-blue-200" : "hover:bg-gray-200"
+      }`}
+    >
+      {user.username}
+    </button>
+  ))}
+
         </div>
 
         {/* Chat window */}

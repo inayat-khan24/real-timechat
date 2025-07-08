@@ -35,4 +35,18 @@ router.post("/login", async (req, res) => {
   res.json({ token, username });
 });
 
+router.get("/getalluser",async(req,res)=>{
+  try {
+    const user = await User.find();
+    res.status(200).json({
+user
+    })
+} catch (error) {
+ res.status(404).json({
+  message : error.message
+ }) 
+}
+
+})
+
 export default router;
