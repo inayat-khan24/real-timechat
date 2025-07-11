@@ -1,10 +1,13 @@
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Use your real Gmail credentials here
-const transporter = nodemailer.createTransport({
+export const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "yourEmail@gmail.com",       // ✅ your Gmail ID
-    pass: "yourAppPassword",           // ✅ app password (not normal password)
+    user: process.env.EMAIL_USER,       
+    pass: process.env.EMAIL_PASS,           
   },
 });
+

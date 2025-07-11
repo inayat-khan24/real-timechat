@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import Chat from "./Chat"; // Public Chat
 import PrivateChat from "./PrivateChat"; // Private Chat
 import Header from "./component/Header.jsx";
+import Account from "./pages/Account.jsx";
 
 function App() {
   const [user, setUser] = useState(localStorage.getItem("username"));
@@ -15,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/account" element={<Account/>} />
 
         {/* 👇 Public Chat */}
         <Route
