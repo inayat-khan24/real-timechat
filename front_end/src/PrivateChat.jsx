@@ -4,19 +4,19 @@ import axios from "axios";
 
 const socket = io("http://localhost:5000");
 
-const PrivateChat = ({ username }) => {
+const PrivateChat = ({userDetails}) => {
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [privateChat, setPrivateChat] = useState([]);
   const [message, setMessage] = useState("");
-
+const username  = localStorage.getItem("username")
 
   // ✅ Fetch all users from backend
   const fetchUsers = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/auth/getalluser");
       const result = await res.json();
-  
+  console.log(result)
         setAllUsers(result.user);
     
     } catch (error) {
@@ -25,16 +25,26 @@ const PrivateChat = ({ username }) => {
   };
 
   // ✅ Join room and load previous chat
-  useEffect(() => {
-    if (selectedUser) {
+  const privateChatuser = async()=>{
+ if (selectedUser) {
       const roomId = [username, selectedUser].sort().join("_");
       socket.emit("joinRoom", roomId);
+ }
+try {
+const res = await axios.get(`http://localhost:5000/api/private/chat/${username}/${selectedUser}`)
 
-      axios
-        .get(`http://localhost:5000/api/private/chat/${username}/${selectedUser}`)
-        .then((res) => setPrivateChat(res.data))
-        .catch((err) => console.error("Error loading private messages", err));
+ setPrivateChat(res.data.messages)
+        
     }
+catch (error) {
+ console.error("Error loading private messages", error) 
+}
+   
+  }
+
+  useEffect(() => {
+   privateChatuser()
+
   }, [selectedUser, username]);
 
   // ✅ Listen to incoming private messages
@@ -75,7 +85,10 @@ const PrivateChat = ({ username }) => {
     }
   };
 
+
+
   return (
+   
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg flex overflow-hidden">
         
@@ -115,7 +128,10 @@ const PrivateChat = ({ username }) => {
                 }`}
               >
                 <div className="text-sm font-medium">{msg.sender}</div>
-                <div>{msg.message}</div>
+                <div>{msg.message} 
+   {/* <img src="" alt="" height={"20px"} width={"20px"} /> */}
+
+                </div>
                 <div className="text-xs text-gray-500">{msg.time}</div>
               </div>
             ))}

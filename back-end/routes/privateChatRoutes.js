@@ -1,5 +1,6 @@
 import express from "express";
 import { PrivateMessage } from "../models/PrivateMessage.js";
+import { User } from "../models/User.js";
 
 const router = express.Router();
 
@@ -18,18 +19,24 @@ router.post("/send", async (req, res) => {
 // Get chat between two users
 router.get("/chat/:user1/:user2", async (req, res) => {
   const { user1, user2 } = req.params;
- 
+ console.log(user2)
+const resiverUser = await User.findOne({ username: user2 });
 
-  try {
+try {
+    
     const messages = await PrivateMessage.find({
       $or: [
-        { sender: user1, receiver: user2 },
-        { sender: user2, receiver: user1 }
+        { sender: user1, receiver: user2, },
+        { sender: user2, receiver: user1 },
       ]
     }).sort({ createdAt: 1 });
 
+
+
+    // res.status(200).json(messages);
+   res.status(200).json({messages,
+   });
     
-    res.status(200).json(messages);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
