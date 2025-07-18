@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer} from 'react-toastify';
 import { handleError, handleSuccess } from "../component/notifiction.jsx";
 
@@ -59,8 +59,10 @@ handleError(message)
           onChange={(e) => setPassword(e.target.value)}
         />
         <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Login</button>
+       
+       <Link to="/forgot-password"><p className="text-blue-500 hover:text-blue-700"  >Forgot Password</p></Link>
         <p className="mt-2 text-center text-sm">
-          Don’t have an account? <a className="text-blue-500" href="/register">Register</a>
+          Don’t have an account? <Link className="text-blue-500" to="/register">Register</Link>
         </p>
       </form>
     </div>

@@ -47,7 +47,28 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
+
+// video call
+  socket.on("offer", (data) => {
+    socket.broadcast.emit("offer", data);
+  });
+
+  socket.on("answer", (data) => {
+    socket.broadcast.emit("answer", data);
+  });
+
+  socket.on("ice-candidate", (data) => {
+    socket.broadcast.emit("ice-candidate", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Client disconnected", socket.id);
+  });
+
+
 });
+
+
 
 // ✅ ROUTES
 app.get("/", (req, res) => res.send("Socket.IO server running"));

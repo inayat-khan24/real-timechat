@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { postSchema } from "./Post.js";
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -16,8 +17,12 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-  }
+  },
+posts: [postSchema],
+   otp: String,
+  otpExpires: Date
 },
+
   {
     timestamps: true,
   }

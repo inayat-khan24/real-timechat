@@ -1,6 +1,6 @@
 import express from "express";
 
-import { getUserDetails,getalluser, login, singUp, updateprofile } from "../controller/userController.js";
+import { forgotPassword, forgotpassword, getUserDetails,getalluser, login, resetPassword, singUp, updateprofile, verifyOtp } from "../controller/userController.js";
 import { upload } from "../controller/uploadController.js";
 import { ensureAuthenticated } from "../middleware/auth.js";
 
@@ -21,5 +21,12 @@ router.get("/getalluser",getalluser)
 router.get("/getUserDetails",ensureAuthenticated,getUserDetails)
 
 router.put('/updateprofile/:id',upload.single("profilePic"),updateprofile)
+
+
+
+
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyOtp);
+router.post("/reset-password", resetPassword);
 
 export default router;

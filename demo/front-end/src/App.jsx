@@ -3,9 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Chat from "./Chat"; // Public Chat
-import PrivateChat from "./pages/PrivateChat.jsx"; // Private Chat
+import PrivateChat from "./PrivateChat.jsx"; // Private Chat
 import Header from "./component/Header.jsx";
 import Account from "./pages/Account.jsx";
+import ForgotPassword from "./pages/forgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+import VerifyOtp from "./pages/Verify.jsx";
+import VideoCall from "./pages/VideoCall.jsx";
 
 function App() {
     const [userInfo, setUserInfo] = useState({
@@ -15,6 +19,8 @@ function App() {
       profilePic: ''
     });
      const [editedData, setEditedData] = useState({});
+     const [selectedUserVideo,setSelectedUserVideo] = useState(null)
+     
       const [profilePic,setProfilePic] = useState()
       const [name,setName] = useState("Guest")
   const token = localStorage.getItem("token");
@@ -47,10 +53,20 @@ function App() {
       profilePic={profilePic} userDetails={userDetails}/>
       <Routes>
         <Route path="/login" element={<Login setUser={setUser} userDetails={userDetails} />} />
+        // forgotPassword
+         <Route path="/forgot-password" element={<ForgotPassword/>} />
+         <Route path="/verify-otp" element={<VerifyOtp/>} />
+         <Route path="/reset-password" element={<ResetPassword/>} />
+         // forgotPassword end
+
+          <Route path="/video-call" element={<VideoCall selectedUserVideo={selectedUserVideo} />} />
         {/* <Route path="/register" element={<Register/>} /> */}
          <Route path="/register" element={
           user? 
-          <PrivateChat userDetails={userDetails} username={user} /> :<Register/>} />
+          <PrivateChat
+          setSelectedUserVideo={setSelectedUserVideo}
+           userDetails={userDetails} 
+           username={user} /> :<Register/>} />
         <Route path="/account" element={<Account userDetails={userDetails}
         editedData = {editedData}
         setEditedData ={setEditedData}
@@ -67,7 +83,9 @@ function App() {
         {/* 👇 Private Chat */}
         <Route
           path="/private"
-          element={user ? <PrivateChat userDetails={userDetails} username={user} /> : <Navigate to="/login" />}
+          element={user ? <PrivateChat
+            setSelectedUserVideo={setSelectedUserVideo}
+            userDetails={userDetails} username={user} /> : <Navigate to="/login" />}
         />
 
         {/* 👇 Default Redirect */}
