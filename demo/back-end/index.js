@@ -5,6 +5,7 @@ import cors from "cors";
 
 import authRoutes from "./routes/authRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
 
 import privateChatRoutes from "./routes/privateChatRoutes.js";
 import { connectDB } from "./models/connection.js";
@@ -77,6 +78,8 @@ app.use("/api/auth", authRoutes); // Auth APIs
 app.use("/api/chat", chatRoutes); // Public Chat APIs
 app.use("/api/private", privateChatRoutes); // Private Chat APIs
 app.use("/uploads", express.static("uploads"));
+/// for post 
+app.use('/api/posts', postRoutes);
 
 
 // ✅ START SERVER

@@ -1,105 +1,99 @@
 import React, { useEffect, useState } from 'react';
-import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import { Button, Menu, MenuItem } from '@mui/material';
 import { IoIosLogOut } from 'react-icons/io';
+import { MdAccountCircle } from 'react-icons/md';
+import { AiOutlineMessage } from 'react-icons/ai';
 import { Link, useNavigate } from 'react-router-dom';
-import { MdAccountCircle } from "react-icons/md";
 
-const Header = ({userDetails,profilePic,name,setUser}) => {
+const Header = ({ userDetails, profilePic, name, setUser }) => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [isLogin, setIsLogin] = useState(true); // For demo, assume true
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const open = Boolean(anchorEl);
+
+  // Handle open and close for menu
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-  const token = localStorage.getItem('token');
-
-  
-  
   // Logout handler
   const handleLogout = () => {
-    localStorage.removeItem('email');
-    localStorage.removeItem('token');
-    setUser(token)
-    localStorage.removeItem('username');
-    localStorage.removeItem('userId');
-   
-    handleClose(); // Close menu after logout
-    ;
-     navigate('/login')
+    localStorage.clear();
+    setUser(null); // clear user state
+    handleClose();
+    navigate('/login');
   };
 
-const handleacoount =()=>{
-handleClose();
-
-}
-  
-
-
-
   useEffect(() => {
-    userDetails();
+    userDetails(); // fetch user details on mount
   }, []);
 
-const profile = profilePic ? `http://localhost:5000/uploads/${profilePic}` :
- "https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3"
+  const profile = profilePic
+    ? `http://localhost:5000/uploads/${profilePic}`
+    : 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3';
 
   return (
-    <header className="bg-amber-50 w-full flex max-lg:flex-col justify-around items-center border-b border-gray-200 shadow-sm">
-   <div className='flex items-center gap-4'>
-
-     <ul>
-    <Link to="/private"> <li>Chat</li></Link> 
-    </ul>
-      <Button
-        className="flex items-center max-sm:w-full gap-2"
-        onClick={handleClick}
-      >
-        <div className="!bg-[#f1f1f1] !rounded-full !h-10 !w-10 !min-w-10 flex items-center justify-center p-0">
-          <img
-            src={profile}
-            alt="user profile"
-            className="w-full h-full object-cover rounded-full"
-          />
+    <header className="bg-amber-50 w-full border-b border-gray-200 shadow-sm">
+      <div className="flex items-center justify-between px-6 py-3 max-lg:flex-col max-lg:gap-3">
+        {/* Left Section */}
+        <div className="flex items-center gap-6">
+          <Link to="/private" className="flex items-center gap-2 text-[1rem] text-gray-700 hover:text-black">
+            <AiOutlineMessage className="text-xl" />
+            <span>Messages</span>
+          </Link>
         </div>
-        <div className="sm:flex flex-col items-start text-xs">
-          <span className="font-semibold capitalize text-black/70">
-            {name}
-          </span>
-        </div>
-      </Button>
-   </div>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        slotProps={{
-          paper: {
-            elevation: 0,
-            sx: { mt: 1.5, minWidth: 180 },
-          },
-        }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <Link to="/account" >
-        <MenuItem onClick={handleacoount}>
-          <MdAccountCircle className='mr-2' />  Account
-        </MenuItem>
-        </Link>
-          <Link to="/register" >
-        <MenuItem onClick={handleacoount}>
-          <MdAccountCircle className='mr-2' />  sing up
-        </MenuItem>
-        </Link>
-        <MenuItem onClick={handleLogout}>
-          <IoIosLogOut className="mr-2" /> Log Out
-        </MenuItem>
-      </Menu>
+        {/* Right Section */}
+        <div className="flex items-center gap-4">
+          {/* Profile Pic */}
+       <Link to="/profile">
+          <div className="flex items-center gap-2">
+            <img
+              src={profile}
+              alt="User"
+              className="w-8 h-8 object-cover rounded-full border"
+            />
+            <span className="text-sm text-gray-800 font-bold">Profile</span>
+          </div>
+       </Link>
+
+          {/* Menu Button */}
+          <Button
+            onClick={handleClick}
+            className="capitalize !text-gray-800 !normal-case"
+          >
+            Menu
+          </Button>
+
+          {/* Dropdown Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            slotProps={{
+              paper: {
+                elevation: 1,
+                sx: { mt: 1.5, minWidth: 180 },
+              },
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          >
+            <Link to="/account">
+              <MenuItem onClick={handleClose}>
+                <MdAccountCircle className="mr-2" /> Account
+              </MenuItem>
+            </Link>
+            <Link to="/register">
+              <MenuItem onClick={handleClose}>
+                <MdAccountCircle className="mr-2" /> Sign Up
+              </MenuItem>
+            </Link>
+            <MenuItem onClick={handleLogout}>
+              <IoIosLogOut className="mr-2" /> Log Out
+            </MenuItem>
+          </Menu>
+        </div>
+      </div>
     </header>
   );
 };

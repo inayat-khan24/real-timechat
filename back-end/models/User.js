@@ -23,6 +23,7 @@ posts: [postSchema],
   otpExpires: Date
 },
 
+
   {
     timestamps: true,
   }

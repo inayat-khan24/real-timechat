@@ -79,6 +79,7 @@ app.use("/api/chat", chatRoutes); // Public Chat APIs
 app.use("/api/private", privateChatRoutes); // Private Chat APIs
 app.use("/uploads", express.static("uploads"));
 /// for post 
+app.use("/postUploads", express.static("postUploads"));
 app.use('/api/posts', postRoutes);
 
 

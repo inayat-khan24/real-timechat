@@ -1,4 +1,5 @@
 import React, { use, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Profile = ({profilePic,userDetails,userInfo}) => {
 const [loading,setLoading] = useState(true)
@@ -30,9 +31,11 @@ if(posts === undefined) return <div>Loading....</div>
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
             <h2 className="text-xl font-semibold">{username}</h2>
+            <Link to="/account">
             <button className="px-4 py-1 text-sm font-medium border rounded-md hover:bg-gray-100">
               Edit Profile
             </button>
+            </Link>
           </div>
 
           <div className="flex gap-6 text-sm text-gray-700">
@@ -49,25 +52,24 @@ if(posts === undefined) return <div>Loading....</div>
       </div>
 
       {/* Posts Gallery */}
-      <div className="grid grid-cols-3 gap-1 mt-6">
-        {posts.map((src, idx) => (
-        <div key={idx}>
-   <img
-            key={idx}
-            src={`http://localhost:5000/postUploads/${src.PostImage}`}
-            alt={`Post ${idx + 1}`}
-            className="w-full aspect-square object-cover hover:opacity-80 cursor-pointer"
-          />
-<div className='flex items-center gap-2 mt-2'>
-<span className='font-bold'>{username}</span>
-<span>{src.caption}</span>
-
-          </div>
-    </div>
-    
-
-        ))}
+     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
+  {posts.map((src, idx) => (
+    <div key={idx} className="w-full">
+      <img
+        src={`http://localhost:5000/postUploads/${src.PostImage}`}
+        alt={`Post ${idx + 1}`}
+        className="w-full aspect-square object-cover hover:opacity-80 cursor-pointer rounded-md"
+      />
+      <div className='flex items-center gap-2 mt-2 px-1'>
+        <span className='font-bold'>{username}</span>
+        <span className="truncate">{src.caption}</span>
       </div>
+    </div>
+  ))}
+</div>
+
+
+      
     </div>
   );
 };
