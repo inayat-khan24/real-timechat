@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 
 const Profile = ({profilePic,userDetails,userInfo}) => {
 const [loading,setLoading] = useState(true)
-const {username,name,posts} = userInfo
+const {username,name,posts,bios} = userInfo
+
   useEffect(() => {
 userDetails(); // fetch user details on mount
 setLoading(false)
   }, []);
-console.log(posts)
+
  const profile = profilePic
     ? `http://localhost:5000/uploads/${profilePic}`
     : 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3';
@@ -46,7 +47,7 @@ if(posts === undefined) return <div>Loading....</div>
 
           <div className="mt-2 text-sm">
             <p className="font-semibold">{name}</p>
-            <p className="text-gray-600">Short bio or description goes here.</p>
+            <p className="text-gray-600">{bios}</p>
           </div>
         </div>
       </div>

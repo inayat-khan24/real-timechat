@@ -27,6 +27,7 @@ const Account = ({ userDetails, userInfo, editedData, setEditedData }) => {
       formData.append("name", editedData.name);
       formData.append("username", editedData.username);
       formData.append("email", editedData.email);
+      formData.append("bios", editedData.bios);
 
       if (selectedFile) {
         formData.append("profilePic", selectedFile);
@@ -143,6 +144,26 @@ const Account = ({ userDetails, userInfo, editedData, setEditedData }) => {
           </div>
           <MdEdit onClick={() => handleEdit("email")} className="text-gray-500 cursor-pointer mt-2" />
         </div>
+
+        {/* Bios */}
+<div className="flex items-start gap-4">
+  <label className="w-24 text-right pt-2 text-sm text-gray-700">Bio</label>
+  <div className="flex-1">
+    {editingField === "bios" ? (
+      <textarea
+        name="bios"
+        value={editedData.bios}
+        onChange={handleChange}
+        rows={3}
+        className="w-full border px-3 py-2 rounded focus:ring focus:outline-none resize-none"
+      />
+    ) : (
+      <p className="text-sm whitespace-pre-wrap">{userInfo.bios || "No bio added."}</p>
+    )}
+  </div>
+  <MdEdit onClick={() => handleEdit("bios")} className="text-gray-500 cursor-pointer mt-2" />
+</div>
+
 
         {/* Save Button */}
         {(editingField || selectedFile) && (

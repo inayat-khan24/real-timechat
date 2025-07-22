@@ -1,75 +1,128 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Button, Menu, MenuItem } from '@mui/material';
+import { IoIosLogOut } from 'react-icons/io';
+import { MdAccountCircle } from 'react-icons/md';
+import { AiOutlineMessage } from 'react-icons/ai';
+import { Link, useNavigate } from 'react-router-dom';
+import { IoCameraOutline } from "react-icons/io5";
 
-const Profile = ({profilePic,userDetails,userInfo}) => {
-const [loading,setLoading] = useState(true)
-const {username,name,posts} = userInfo
+
+const Header = ({ userDetails, profilePic, name, setUser }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const userSearch = ["logical143","soft12","jooe124"]
+  const navigate = useNavigate();
+
+  const open = Boolean(anchorEl);
+
+  // Handle open and close for menu
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.clear();
+    setUser(null); // clear user state
+    handleClose();
+    navigate('/login');
+  };
+
+
+ const Postprofile = async()=>{
+
+
+ } 
+
+  const handleProfilePost =(e)=>{
+    
+  const file = e.target.files[0];
+  console.log("Selected file:", file);
+  }
+
   useEffect(() => {
-userDetails(); // fetch user details on mount
-setLoading(false)
+    userDetails(); // fetch user details on mount
   }, []);
-console.log(posts)
- const profile = profilePic
+
+  const profile = profilePic
     ? `http://localhost:5000/uploads/${profilePic}`
     : 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3';
 
-//   const profilePic = "https://i.pravatar.cc/150?img=5"; // or your uploaded one
-//   const posts = new Array(3).fill("https://source.unsplash.com/random/300x300");
-if(posts === undefined) return <div>Loading....</div>
   return (
-    <div className="max-w-5xl mx-auto p-4">
-      {/* Top Profile Section */}
-      <div className="flex flex-col md:flex-row items-center gap-8 border-b pb-6">
-        {/* Profile Image */}
-        <img
-          src={profile}
-          alt="Profile"
-          className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border"
-        />
+    <header className="bg-amber-50 w-full border-b border-gray-200 shadow-sm">
+      <div className="flex items-center justify-between px-6 py-3 max-lg:flex-col max-lg:gap-3">
+        {/* Left Section */}
+        <div className="flex items-center gap-6">
+          <Link to="/private" className="flex items-center gap-2 text-[1rem] text-gray-700 hover:text-black">
+            <AiOutlineMessage className="text-xl" />
+            <span>Messages</span>
+          </Link>
+       {/* // post uploaded */}
+   <label htmlFor="fileInput" className="cursor-pointer text-gray-600 hover:text-black">
+  <IoCameraOutline className="text-2xl" />
+  <input
+    type="file"
+    id="fileInput"
+    onChange={handleProfilePost}
+    accept="image/*"
+    className="hidden"
+  />
+</label>
 
-        {/* User Info */}
-        <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-            <h2 className="text-xl font-semibold">{username}</h2>
-            <button className="px-4 py-1 text-sm font-medium border rounded-md hover:bg-gray-100">
-              Edit Profile
-            </button>
-          </div>
+        </div>
 
-          <div className="flex gap-6 text-sm text-gray-700">
-            <span><strong>{posts.length}</strong> posts</span>
-            <span><strong>1.2k</strong> followers</span>
-            <span><strong>180</strong> following</span>
+        {/* Right Section */}
+        <div className="flex items-center gap-4">
+          {/* Profile Pic */}
+       <Link to="/profile">
+          <div className="flex items-center gap-2">
+            <img
+              src={profile}
+              alt="User"
+              className="w-8 h-8 object-cover rounded-full border"
+            />
+            <span className="text-sm text-gray-800 font-bold">Profile</span>
           </div>
+       </Link>
 
-          <div className="mt-2 text-sm">
-            <p className="font-semibold">{name}</p>
-            <p className="text-gray-600">Short bio or description goes here.</p>
-          </div>
+          {/* Menu Button */}
+          <Button
+            onClick={handleClick}
+            className="capitalize !text-gray-800"
+          >
+            Menu
+          </Button>
+
+          {/* Dropdown Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            slotProps={{
+              paper: {
+                elevation: 1,
+                sx: { mt: 1.5, minWidth: 180 },
+              },
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          >
+            <Link to="/account">
+              <MenuItem onClick={handleClose}>
+                <MdAccountCircle className="mr-2" /> Account
+              </MenuItem>
+            </Link>
+            <Link to="/register">
+              <MenuItem onClick={handleClose}>
+                <MdAccountCircle className="mr-2" /> Sign Up
+              </MenuItem>
+            </Link>
+            <MenuItem onClick={handleLogout}>
+              <IoIosLogOut className="mr-2" /> Log Out
+            </MenuItem>
+          </Menu>
         </div>
       </div>
-
-      {/* Posts Gallery */}
-      <div className="grid grid-cols-3 gap-1 mt-6">
-        {posts.map((src, idx) => (
-        <div key={idx}>
-   <img
-            key={idx}
-            src={`http://localhost:5000/postUploads/${src.PostImage}`}
-            alt={`Post ${idx + 1}`}
-            className="w-full aspect-square object-cover hover:opacity-80 cursor-pointer"
-          />
-<div className='flex items-center gap-2 mt-2'>
-<span className='font-bold'>{username}</span>
-<span>{src.caption}</span>
-
-          </div>
-    </div>
-    
-
-        ))}
-      </div>
-    </div>
+    </header>
   );
 };
 
-export default Profile;
+export default Header;

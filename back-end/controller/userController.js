@@ -109,7 +109,7 @@ try {
 // Update User Profile
 export const updateprofile = async (req, res) => {
   const userId = req.params.id;
-  const { username, name } = req.body;
+  const { username, name,bios } = req.body;
 
   try {
     const user = await User.findById(userId);
@@ -118,6 +118,7 @@ export const updateprofile = async (req, res) => {
     // Update fields
     if (username) user.username = username;
     if (name) user.name = name;
+    if (bios) user.bios = bios
 
     // ✅ Handle profilePic upload
     if (req.file) {
@@ -132,6 +133,7 @@ export const updateprofile = async (req, res) => {
         id: updatedUser._id,
         username: updatedUser.username,
         name: updatedUser.name,
+        bios : updatedUser.bios,
         profilePic: updatedUser.profilePic,
         email: updatedUser.email,
       }
