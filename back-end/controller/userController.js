@@ -256,3 +256,45 @@ export const resetPassword = async (req, res) => {
   res.json({ success: true, message: "Password reset successful" });
 };
 
+// search user 
+// export const searchUser = async(req,res)=>{
+// try {
+//   const userSearch = await User.find()
+// console.log(userSearch)
+//   res.status(200).json({
+//     success : true,
+//     userSearch
+
+//   })
+// } catch (error) {
+//   res.status(404).json({
+//     success : false ,
+//     message : error.message
+//   })
+// }
+// }
+
+export const searchUser = async (req, res) => {
+  try {
+    if(!User){
+res.status(404).json({
+  success : false,
+  message : "user not found"
+})
+    } else {
+  const userSearch = await User.find().select("name username profilePic");
+   res.status(200).json({
+      success: true,
+      users: userSearch
+    });
+    }
+  
+
+   
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

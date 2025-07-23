@@ -1,6 +1,7 @@
 import express from "express";
 
-import { forgotPassword, forgotpassword, getUserDetails,getalluser, login, resetPassword, singUp, updateprofile, verifyOtp } from "../controller/userController.js";
+import { forgotPassword, forgotpassword, getUserDetails,getalluser,
+     login, resetPassword, singUp, updateprofile, verifyOtp,searchUser } from "../controller/userController.js";
 import { upload } from "../controller/uploadController.js";
 import { ensureAuthenticated } from "../middleware/auth.js";
 
@@ -15,6 +16,9 @@ router.post("/login",login);
 
 // get all user API
 router.get("/getalluser",getalluser)
+
+// search user 
+router.get("/search",searchUser)
 
 // getUserDetails
 

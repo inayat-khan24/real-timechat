@@ -9,6 +9,9 @@ import ThemeSelector from "./component/ThemeSelector.jsx";
 const socket = io("http://localhost:5000");
 
 const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
+
+
+
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [privateChat, setPrivateChat] = useState([]);
