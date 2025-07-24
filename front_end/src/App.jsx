@@ -12,6 +12,7 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import VerifyOtp from "./pages/Verify.jsx";
 import VideoCall from "./pages/VideoCall.jsx";
 import Profile from "./pages/Profile.jsx";
+import UserInfo from "./pages/userInfo.jsx";
 
 function App() {
     const [userInfo, setUserInfo] = useState({
@@ -94,6 +95,14 @@ function App() {
   userDetails={userDetails} 
   userInfo = {userInfo}
   />} />
+
+  // user profile 
+  <Route path="/:anotherUserID" element={<UserInfo profilePic={profilePic}
+  userDetails={userDetails} 
+  userInfo = {userInfo}
+  />} />
+
+
         {/* 👇 Default Redirect */}
         <Route path="*" element={<Navigate to={user ? "/private" : "/login"} />} />
       </Routes>

@@ -1,7 +1,9 @@
 import express from "express";
 
 import { forgotPassword, forgotpassword, getUserDetails,getalluser,
-     login, resetPassword, singUp, updateprofile, verifyOtp,searchUser } from "../controller/userController.js";
+     login, resetPassword, singUp,
+      updateprofile, verifyOtp,searchUser, 
+      getOtherUserDetails} from "../controller/userController.js";
 import { upload } from "../controller/uploadController.js";
 import { ensureAuthenticated } from "../middleware/auth.js";
 
@@ -26,7 +28,8 @@ router.get("/getUserDetails",ensureAuthenticated,getUserDetails)
 
 router.put('/updateprofile/:id',upload.single("profilePic"),updateprofile)
 
-
+// get search another user data
+router.get("/getOtherUserDetails/:anotherUserID",getOtherUserDetails)
 
 
 router.post("/forgot-password", forgotPassword);

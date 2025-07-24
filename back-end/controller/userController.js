@@ -298,3 +298,30 @@ res.status(404).json({
     });
   }
 };
+ 
+
+// get another user data
+
+export const getOtherUserDetails = async(req,res)=>{
+
+const {anotherUserID} = req.params
+console.log(anotherUserID)
+try {
+    
+  if(!anotherUserID){
+    res.status(404).json({
+      result : false,
+      message : "params anotherUserID required"
+    })
+  }
+  const AnotherUserID = await User.find({ username: anotherUserID });
+  // const AnotherUserID = await User.findOne({anotherUserID})
+  res.status(200).json(AnotherUserID)
+} catch (error) {
+  res.status(404).json({
+    result : false,
+    message : error.message
+  })
+}
+
+}

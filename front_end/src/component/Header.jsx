@@ -111,8 +111,9 @@ const Header = ({ userDetails, profilePic, setUser }) => {
                   {searchTerm.trim() ? (
                     filteredUsers.length > 0 ? (
                       filteredUsers.map((user, i) => (
-                        <div
+                        <Link to={`/${user.username}`}
                           key={i}
+                          // onClick={()=>handlesearch(user.username)}
                           className="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-yellow-100 to-yellow-200 hover:from-yellow-200 hover:to-yellow-300 rounded-md cursor-pointer text-sm text-gray-800 transition-all duration-150 shadow-sm"
                         >
                           <img
@@ -121,7 +122,7 @@ const Header = ({ userDetails, profilePic, setUser }) => {
                             className="w-7 h-7 object-cover rounded-full border"
                           />
                           <span className="font-medium">{user.username}</span>
-                        </div>
+                        </Link>
                       ))
                     ) : (
                       <div className="text-gray-500 text-sm px-4 py-2 bg-gray-100 rounded-md">
