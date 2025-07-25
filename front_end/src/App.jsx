@@ -97,10 +97,7 @@ function App() {
   />} />
 
   // user profile 
-  <Route path="/:anotherUserID" element={<UserInfo profilePic={profilePic}
-  userDetails={userDetails} 
-  userInfo = {userInfo}
-  />} />
+  <Route path="/:anotherUserID" element={<UserInfo/>} />
 
 
         {/* 👇 Default Redirect */}

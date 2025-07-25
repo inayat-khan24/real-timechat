@@ -1,183 +1,98 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Button, Menu, MenuItem } from '@mui/material';
-import { IoIosLogOut } from 'react-icons/io';
-import { MdAccountCircle } from 'react-icons/md';
-import { AiOutlineMessage } from 'react-icons/ai';
-import { IoCameraOutline, IoSearch } from "react-icons/io5";
-import { Link, useNavigate } from 'react-router-dom';
+import React, { use, useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 
-const Header = ({ userDetails, profilePic, setUser }) => {
-  const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [submittedValue, setSubmittedValue] = useState('');
+const UserInfo = () => {
+const [loading,setLoading] = useState(true)
+  const [otherUserinfo,setOtherUserinfo] = useState({})
+const {anotherUserID}= useParams()
 
-  const open = Boolean(anchorEl);
-  const searchRef = useRef(null);
+ const anotherUserIDFetch = async () => {
 
-  const profile = profilePic
-    ? `http://localhost:5000/uploads/${profilePic}`
-    : 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3';
-
-  const userSearch = ["logical143", "soft12","soft", "jooe124"];
-
-  const filteredUsers = userSearch.filter((user) =>
-    user.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-
-
-  useEffect(() => {
-    userDetails();
-
-    // Click outside to close search
-    const handleClickOutside = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setSearchOpen(false);
+      try {
+        const res = await fetch(`http://localhost:5000/api/auth/getOtherUserDetails/${anotherUserID}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+           
+          }
+        });
+        const data = await res.json();
+        console.log(data)
+        setOtherUserinfo(data[0]);
+        setLoading(false)
+      
+      } catch (err) {
+        console.error("Failed to fetch user details", err);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
 
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+  useEffect(() => {
+anotherUserIDFetch() // fetch user details on mount
+setLoading(false)
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    setUser(null);
-    handleClose();
-    navigate('/login');
-  };
 
-  const handleClose = () => setAnchorEl(null);
-  const handleClick = (e) => setAnchorEl(e.currentTarget);
 
-  const handleProfilePost = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    console.log("Selected file:", file);
-  };
 
+if(loading) return <div>Loading....</div>
   return (
-    <header className="bg-white w-full border-b border-gray-200 shadow-sm sticky top-0 z-50">
-      <div className="flex items-center justify-between px-6 py-3">
-        {/* Left */}
-        <div className="flex items-center gap-4">
-          <Link to="/private" className="flex items-center gap-2 text-gray-700 hover:text-black text-[1rem]">
-            <AiOutlineMessage className="text-xl" />
-            <span>Messages</span>
-          </Link>
+//     <div className="max-w-5xl mx-auto p-4">
+//       {/* Top Profile Section */}
+//       <div className="flex flex-col md:flex-row items-center gap-8 border-b pb-6">
+//         {/* Profile Image */}
+//         <img
+//           src={profile}
+//           alt="Profile"
+//           className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border"
+//         />
 
-          <label htmlFor="fileInput" className="cursor-pointer text-gray-600 hover:text-black">
-            <IoCameraOutline className="text-2xl" />
-            <input
-              type="file"
-              id="fileInput"
-              accept="image/*"
-              onChange={handleProfilePost}
-              className="hidden"
-            />
-          </label>
+//         {/* User Info */}
+//         <div className="flex-1">
+//           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+//             <h2 className="text-xl font-semibold">{username}</h2>
+//             <Link to="/account">
+//             <button className="px-4 py-1 text-sm font-medium border rounded-md hover:bg-gray-100">
+//               Edit Profile
+//             </button>
+//             </Link>
+//           </div>
 
-          {/* Instagram Style Search */}
-          <div className="relative" ref={searchRef}>
-            <button
-              onClick={() => setSearchOpen((prev) => !prev)}
-              className="text-xl mt-2 text-gray-600 hover:text-black"
-            >
-              <IoSearch />
-            </button>
+//           <div className="flex gap-6 text-sm text-gray-700">
+//             <span><strong>{posts.length}</strong> posts</span>
+//             <span><strong>1.2k</strong> followers</span>
+//             <span><strong>180</strong> following</span>
+//           </div>
 
-            {searchOpen && (
-  <div className="absolute left-0 top-12 w-80 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl shadow-2xl p-4 z-50 animate-fade-in">
-    <input
-      type="text"
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      placeholder="🔍 Search users..."
-      className="w-full border border-gray-300 focus:border-blue-500 transition-all duration-200 px-4 py-2 rounded-lg text-sm mb-3 outline-none placeholder-gray-500"
-      autoFocus
-    />
+//           <div className="mt-2 text-sm">
+//             <p className="font-semibold">{name}</p>
+//             <p className="text-gray-600">{bios}</p>
+//           </div>
+//         </div>
+//       </div>
 
-    <div className="max-h-60 overflow-y-auto space-y-2">
-      {searchTerm.trim() ? (
-        filteredUsers.length > 0 ? (
-          filteredUsers.map((user, i) => (
-            <div
-              key={i}
-              className="px-4 py-2 bg-gradient-to-r from-yellow-100 to-yellow-200 hover:from-yellow-200 hover:to-yellow-300 rounded-md cursor-pointer text-sm text-gray-800 transition-all duration-150 shadow-sm"
-            >
-              {user}
-            </div>
-          ))
-        ) : (
-          <div className="text-gray-500 text-sm px-4 py-2 bg-gray-100 rounded-md">
-            No results found.
-          </div>
-        )
-      ) : (
-        <div className="text-gray-400 text-sm px-4 py-2 text-center italic">
-          Start typing to search...
-        </div>
-      )}
-    </div>
-  </div>
-)}
+//       {/* Posts Gallery */}
+//      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
+//   {posts.map((src, idx) => (
+//     <div key={idx} className="w-full">
+//       <img
+//         src={`http://localhost:5000/postUploads/${src.PostImage}`}
+//         alt={`Post ${idx + 1}`}
+//         className="w-full aspect-square object-cover hover:opacity-80 cursor-pointer rounded-md"
+//       />
+//       <div className='flex items-center gap-2 mt-2 px-1'>
+//         <span className='font-bold'>{username}</span>
+//         <span className="truncate">{src.caption}</span>
+//       </div>
+//     </div>
+//   ))}
+// </div>
 
-          </div>
-        </div>
 
-        {/* Right */}
-        <div className="flex items-center gap-4">
-          <Link to="/profile">
-            <div className="flex items-center gap-2">
-              <img
-                src={profile}
-                alt="User"
-                className="w-8 h-8 object-cover rounded-full border"
-              />
-              <span className="text-sm text-gray-800 font-semibold">Profile</span>
-            </div>
-          </Link>
-
-          <Button
-            onClick={handleClick}
-            className="!text-gray-800 !normal-case"
-          >
-            Menu
-          </Button>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            slotProps={{
-              paper: {
-                elevation: 1,
-                sx: { mt: 1.5, minWidth: 180 },
-              },
-            }}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            <Link to="/account">
-              <MenuItem onClick={handleClose}>
-                <MdAccountCircle className="mr-2" /> Account
-              </MenuItem>
-            </Link>
-            <Link to="/register">
-              <MenuItem onClick={handleClose}>
-                <MdAccountCircle className="mr-2" /> Sign Up
-              </MenuItem>
-            </Link>
-            <MenuItem onClick={handleLogout}>
-              <IoIosLogOut className="mr-2" /> Log Out
-            </MenuItem>
-          </Menu>
-        </div>
-      </div>
-    </header>
+      
+//     </div>
+<div>
+</div>
   );
 };
 
-export default Header;
+export default UserInfo;

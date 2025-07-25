@@ -3,7 +3,10 @@ import express from "express";
 import { forgotPassword, forgotpassword, getUserDetails,getalluser,
      login, resetPassword, singUp,
       updateprofile, verifyOtp,searchUser, 
-      getOtherUserDetails} from "../controller/userController.js";
+      getOtherUserDetails,
+      followUser,
+      unfollowUser,
+      getUserFollowersFollowing} from "../controller/userController.js";
 import { upload } from "../controller/uploadController.js";
 import { ensureAuthenticated } from "../middleware/auth.js";
 
@@ -35,5 +38,11 @@ router.get("/getOtherUserDetails/:anotherUserID",getOtherUserDetails)
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOtp);
 router.post("/reset-password", resetPassword);
+
+//! user following and followers and unfollow
+
+router.post("/follow", followUser);
+router.post("/unfollow", unfollowUser);
+router.get("/:userId/follow-data", getUserFollowersFollowing);
 
 export default router;

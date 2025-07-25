@@ -325,3 +325,117 @@ try {
 }
 
 }
+
+
+//! user following and followers and unfollowng
+
+
+export const followUser = async (req, res) => {
+  try {
+    const { currentUserId, targetUserId } = req.body;
+if(!currentUserId || !targetUserId){
+  return res.status(404).json({
+    success : false,
+    message : "currentUserId, targetUserId  required"
+  })
+}
+
+
+    if (currentUserId === targetUserId) {
+      return res.status(400).json({ message: "You can't follow yourself." });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+    console.log(currentUser)
+    console.log(targetUser)
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const isAlreadyFollowing = currentUser.following?.some(
+      (f) => f.userId?.toString() === targetUserId
+    );
+
+    if (isAlreadyFollowing) {
+      return res.status(400).json({ message: "Already following this user." });
+    }
+
+    currentUser.following.push({
+      userId: targetUser._id,
+      username: targetUser.username,
+      profilePic: targetUser.profilePic || null,
+    });
+
+    targetUser.followers.push({
+      userId: currentUser._id,
+      username: currentUser.username,
+      profilePic: currentUser.profilePic || null,
+    });
+
+    await currentUser.save();
+    await targetUser.save();
+
+    return res.status(200).json({ message: "User followed successfully." });
+
+  } catch (err) {
+    console.error("Follow Error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+
+// Unfollow a user
+export const unfollowUser = async (req, res) => {
+  try {
+    const { currentUserId, targetUserId } = req.body;
+ if (!currentUserId || !targetUserId ) {
+      return res.status(404).json({ message: "currentUserId, targetUserId required " });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Remove from following
+    currentUser.following = currentUser.following.filter(
+      (f) => f.userId.toString() !== targetUserId
+    );
+
+    // Remove from followers
+    targetUser.followers = targetUser.followers.filter(
+      (f) => f.userId.toString() !== currentUserId
+    );
+
+    await currentUser.save();
+    await targetUser.save();
+
+    res.status(200).json({ message: "User unfollowed successfully." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get followers and following with user info
+export const getUserFollowersFollowing = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId)
+      .populate("followers.userId", "username profilePic")
+      .populate("following.userId", "username profilePic");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json({
+      followers: user.followers,
+      following: user.following,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
