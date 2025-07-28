@@ -366,6 +366,7 @@ if(!currentUserId || !targetUserId){
       userId: targetUser._id,
       username: targetUser.username,
       profilePic: targetUser.profilePic || null,
+      
     });
 
     targetUser.followers.push({

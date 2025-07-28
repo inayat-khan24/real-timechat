@@ -13,6 +13,8 @@ import VerifyOtp from "./pages/Verify.jsx";
 import VideoCall from "./pages/VideoCall.jsx";
 import Profile from "./pages/Profile.jsx";
 import UserInfo from "./pages/userInfo.jsx";
+import Followers from "./pages/Followers.jsx";
+import Following from "./pages/Following.jsx";
 
 function App() {
     const [userInfo, setUserInfo] = useState({
@@ -98,6 +100,10 @@ function App() {
 
   // user profile 
   <Route path="/:anotherUserID" element={<UserInfo/>} />
+
+  // followers and following
+  <Route path="/:anotherUserID/followers" element={<Followers/>} />
+  <Route path="/:anotherUserID/following" element={<Following/>} />
 
 
         {/* 👇 Default Redirect */}

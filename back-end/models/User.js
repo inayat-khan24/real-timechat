@@ -10,6 +10,7 @@ const followerSchema = new mongoose.Schema({
   },
   username: String,
   profilePic: String,
+  
   createdAt: { type: Date, default: Date.now },
 });
 

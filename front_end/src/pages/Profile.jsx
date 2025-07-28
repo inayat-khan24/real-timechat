@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 
 const Profile = ({profilePic,userDetails,userInfo}) => {
 const [loading,setLoading] = useState(true)
-const {username,name,posts,bios} = userInfo
+const {username,name,posts,bios
+  , followers = [],
+    following = []
+} = userInfo
 
   useEffect(() => {
 userDetails(); // fetch user details on mount
@@ -41,8 +44,8 @@ if(posts === undefined) return <div>Loading....</div>
 
           <div className="flex gap-6 text-sm text-gray-700">
             <span><strong>{posts.length}</strong> posts</span>
-            <span><strong>1.2k</strong> followers</span>
-            <span><strong>180</strong> following</span>
+            <span><strong>{followers.length}</strong> followers</span>
+            <span><strong>{following.length}</strong> following</span>
           </div>
 
           <div className="mt-2 text-sm">
