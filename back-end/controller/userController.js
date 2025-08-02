@@ -45,8 +45,9 @@ if(!username || !password){
     message : "username and password required"
   })
 }
-  const user = await User.findOne({ username });
-  console.log(user)
+
+ const user = await User.findOne({ username });
+
   if (!user) return res.status(400).json({ message: "Invalid user" });
 
   const match = await bcrypt.compare(password, user.password);
@@ -89,7 +90,7 @@ user
 export const getUserDetails = async (req,res)=>{
 const {userId} = req.query
 try {
-    console.log(userId)
+    
   if(!userId){
     res.status(404).json({
       result : false,
@@ -153,7 +154,7 @@ export const forgotpassword = async (req,res)=>{
   }
 
   const user = await User.findOne({ email });
-  console.log(user)
+  
   if (!user) return res.status(404).json({ message: "User not found" });
 
   const token = crypto.randomBytes(32).toString("hex");
@@ -305,7 +306,9 @@ res.status(404).json({
 export const getOtherUserDetails = async(req,res)=>{
 
 const {anotherUserID} = req.params
-console.log(anotherUserID)
+
+
+
 try {
     
   if(!anotherUserID){
@@ -315,6 +318,7 @@ try {
     })
   }
   const AnotherUserID = await User.find({ username: anotherUserID });
+  
   // const AnotherUserID = await User.findOne({anotherUserID})
   res.status(200).json(AnotherUserID)
 } catch (error) {
@@ -333,6 +337,7 @@ try {
 export const followUser = async (req, res) => {
   try {
     const { currentUserId, targetUserId } = req.body;
+   
 if(!currentUserId || !targetUserId){
   return res.status(404).json({
     success : false,
@@ -347,8 +352,7 @@ if(!currentUserId || !targetUserId){
 
     const currentUser = await User.findById(currentUserId);
     const targetUser = await User.findById(targetUserId);
-    console.log(currentUser)
-    console.log(targetUser)
+ 
 
     if (!currentUser || !targetUser) {
       return res.status(404).json({ message: "User not found." });
@@ -422,9 +426,18 @@ export const unfollowUser = async (req, res) => {
 };
 
 // Get followers and following with user info
+
+
 export const getUserFollowersFollowing = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId)
+    const userId = req.params.userId;
+console.log("userID",userId)
+    // Validate ObjectId format (extra safety)
+    if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: "Invalid user ID format" });
+    }
+
+    const user = await User.findById(userId)
       .populate("followers.userId", "username profilePic")
       .populate("following.userId", "username profilePic");
 
@@ -440,3 +453,4 @@ export const getUserFollowersFollowing = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+

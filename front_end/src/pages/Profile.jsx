@@ -1,14 +1,17 @@
 import React, { use, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 const Profile = ({profilePic,userDetails,userInfo}) => {
 const [loading,setLoading] = useState(true)
+
+ const user = localStorage.getItem("username");
 const {username,name,posts,bios
   , followers = [],
     following = []
 } = userInfo
 
   useEffect(() => {
+    localStorage.removeItem("anotherUser");
 userDetails(); // fetch user details on mount
 setLoading(false)
   }, []);
@@ -42,11 +45,15 @@ if(posts === undefined) return <div>Loading....</div>
             </Link>
           </div>
 
-          <div className="flex gap-6 text-sm text-gray-700">
-            <span><strong>{posts.length}</strong> posts</span>
-            <span><strong>{followers.length}</strong> followers</span>
-            <span><strong>{following.length}</strong> following</span>
-          </div>
+         <div className="flex gap-8 text-sm text-gray-700 mb-3">
+                       <span><strong>{posts.length}</strong> posts</span>
+                       <Link to={`/${user}/followers`}>
+                       <span><strong>{followers.length}</strong> followers</span>
+                       </Link>
+                       <Link to={`/${user}/following`}>
+                       <span><strong>{following.length}</strong> following</span>
+                       </Link>
+                     </div>
 
           <div className="mt-2 text-sm">
             <p className="font-semibold">{name}</p>

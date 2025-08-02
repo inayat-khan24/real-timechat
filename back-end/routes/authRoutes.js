@@ -9,6 +9,7 @@ import { forgotPassword, forgotpassword, getUserDetails,getalluser,
       getUserFollowersFollowing} from "../controller/userController.js";
 import { upload } from "../controller/uploadController.js";
 import { ensureAuthenticated } from "../middleware/auth.js";
+// import { getUserFollowersWithStatus } from "../controller/anotheruser.js";
 
 const router = express.Router();
 
@@ -44,5 +45,7 @@ router.post("/reset-password", resetPassword);
 router.post("/follow", followUser);
 router.post("/unfollow", unfollowUser);
 router.get("/:userId/follow-data", getUserFollowersFollowing);
+
+// router.get("/user/:targetUserId/followers-with-status", getUserFollowersWithStatus);
 
 export default router;

@@ -7,6 +7,7 @@ const UserInfo = () => {
   const [followed, setFollowed] = useState(false);
   const { anotherUserID } = useParams();
   const currentUserId = localStorage.getItem("userId");
+ 
 
   // Fetch other user's profile
   useEffect(() => {
@@ -85,7 +86,7 @@ const UserInfo = () => {
   };
 
   if (loading) return <div className="text-center py-10 text-lg font-semibold">Loading user profile...</div>;
-
+ localStorage.setItem("anotherUser",_id)
   return (
     <div className="max-w-6xl mx-auto p-6">
       {/* Top Profile Section */}

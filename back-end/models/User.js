@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { postSchema } from "./Post.js";
+import { type } from "os";
 
 // Define embedded subdocuments for followers and following
 const followerSchema = new mongoose.Schema({
@@ -8,6 +9,7 @@ const followerSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  
   username: String,
   profilePic: String,
   
@@ -22,6 +24,7 @@ const followingSchema = new mongoose.Schema({
   },
   username: String,
   profilePic: String,
+  isFollow : {type: Boolean, default:false} ,
   createdAt: { type: Date, default: Date.now },
 });
 
