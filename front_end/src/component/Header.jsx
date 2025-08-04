@@ -13,6 +13,11 @@ const Header = ({ userDetails, profilePic, setUser }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [userSearch, setUserSearch] = useState([]);
 
+  const [postModalOpen, setPostModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [caption, setCaption] = useState("");
+  const [imageSize, setImageSize] = useState("full");
+
   const open = Boolean(anchorEl);
   const searchRef = useRef(null);
 
@@ -20,7 +25,6 @@ const Header = ({ userDetails, profilePic, setUser }) => {
     ? `http://localhost:5000/uploads/${profilePic}`
     : 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3';
 
-  // 🔍 Fetch all users
   const fetchSearch = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/auth/search");
@@ -31,16 +35,14 @@ const Header = ({ userDetails, profilePic, setUser }) => {
     }
   };
 
-  // 🔍 Filter users based on search term
   const filteredUsers = userSearch.filter((user) =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   useEffect(() => {
-    userDetails(); // if needed
+    userDetails();
     fetchSearch();
 
-    // 📦 Close dropdown when clicking outside
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setSearchOpen(false);
@@ -63,130 +65,185 @@ const Header = ({ userDetails, profilePic, setUser }) => {
   const handleProfilePost = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    console.log("Selected file:", file);
+    setSelectedImage(file);
+    setPostModalOpen(true);
+  };
+
+  const handleSubmitPost = async () => {
+    if (!selectedImage || !caption) return alert("Image and caption required");
+
+    const formData = new FormData();
+    formData.append("PostImage", selectedImage);
+    formData.append("userId", localStorage.getItem("userId")); // or from props
+    formData.append("caption", caption);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/posts/create", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      console.log("Post response:", data);
+      alert("Post uploaded successfully");
+      setSelectedImage(null);
+      setCaption("");
+      setPostModalOpen(false);
+    } catch (err) {
+      console.error("Post error", err);
+      alert("Failed to upload post");
+    }
   };
 
   return (
-    <header className="bg-white w-full border-b border-gray-200 shadow-sm sticky top-0 z-50">
-      <div className="flex items-center justify-between px-6 py-3">
-        {/* Left */}
-        <div className="flex items-center gap-4">
-          <Link to="/private" className="flex items-center gap-2 text-gray-700 hover:text-black text-[1rem]">
-            <AiOutlineMessage className="text-xl" />
-            <span>Messages</span>
-          </Link>
+    <>
+      <header className="bg-white w-full border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <div className="flex items-center justify-between px-6 py-3">
+          {/* Left */}
+          <div className="flex items-center gap-4">
+            <Link to="/private" className="flex items-center gap-2 text-gray-700 hover:text-black text-[1rem]">
+              <AiOutlineMessage className="text-xl" />
+              <span>Messages</span>
+            </Link>
 
-          <label htmlFor="fileInput" className="cursor-pointer text-gray-600 hover:text-black">
-            <IoCameraOutline className="text-2xl" />
-            <input
-              type="file"
-              id="fileInput"
-              accept="image/*"
-              onChange={handleProfilePost}
-              className="hidden"
-            />
-          </label>
+            <label htmlFor="fileInput" className="cursor-pointer text-gray-600 hover:text-black">
+              <IoCameraOutline className="text-2xl" />
+              <input
+                type="file"
+                id="fileInput"
+                accept="image/*"
+                onChange={handleProfilePost}
+                className="hidden"
+              />
+            </label>
 
-          {/* 🔍 Search Dropdown */}
-          <div className="relative" ref={searchRef}>
-            <button
-              onClick={() => setSearchOpen((prev) => !prev)}
-              className="text-xl mt-2 text-gray-600 hover:text-black"
-            >
-              <IoSearch />
-            </button>
+            {/* Search */}
+            <div className="relative" ref={searchRef}>
+              <button
+                onClick={() => setSearchOpen((prev) => !prev)}
+                className="text-xl mt-2 text-gray-600 hover:text-black"
+              >
+                <IoSearch />
+              </button>
 
-            {searchOpen && (
-              <div className="absolute left-0 top-12 w-80 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl shadow-2xl p-4 z-50 animate-fade-in">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="🔍 Search users..."
-                  className="w-full border border-gray-300 focus:border-blue-500 transition-all duration-200 px-4 py-2 rounded-lg text-sm mb-3 outline-none placeholder-gray-500"
-                  autoFocus
-                />
+              {searchOpen && (
+                <div className="absolute left-0 top-12 w-80 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl shadow-2xl p-4 z-50 animate-fade-in">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="🔍 Search users..."
+                    className="w-full border border-gray-300 focus:border-blue-500 transition-all duration-200 px-4 py-2 rounded-lg text-sm mb-3 outline-none placeholder-gray-500"
+                    autoFocus
+                  />
 
-                <div className="max-h-60 overflow-y-auto space-y-2">
-                  {searchTerm.trim() ? (
-                    filteredUsers.length > 0 ? (
-                      filteredUsers.map((user, i) => (
-                        <Link to={`/${user.username}`}
-                          key={i}
-                          // onClick={()=>handlesearch(user.username)}
-                          className="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-yellow-100 to-yellow-200 hover:from-yellow-200 hover:to-yellow-300 rounded-md cursor-pointer text-sm text-gray-800 transition-all duration-150 shadow-sm"
-                        >
-                          <img
-                            src={`http://localhost:5000/uploads/${user.profilePic}`}
-                            alt={user.username}
-                            className="w-7 h-7 object-cover rounded-full border"
-                          />
-                          <span className="font-medium">{user.username}</span>
-                        </Link>
-                      ))
+                  <div className="max-h-60 overflow-y-auto space-y-2">
+                    {searchTerm.trim() ? (
+                      filteredUsers.length > 0 ? (
+                        filteredUsers.map((user, i) => (
+                          <Link to={`/${user.username}`} key={i}
+                            className="flex items-center gap-3 px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded-md cursor-pointer text-sm text-gray-800 transition-all duration-150 shadow-sm"
+                          >
+                            <img
+                              src={`http://localhost:5000/uploads/${user.profilePic}`}
+                              alt={user.username}
+                              className="w-7 h-7 object-cover rounded-full border"
+                            />
+                            <span className="font-medium">{user.username}</span>
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="text-gray-500 text-sm px-4 py-2 bg-gray-100 rounded-md">
+                          No results found.
+                        </div>
+                      )
                     ) : (
-                      <div className="text-gray-500 text-sm px-4 py-2 bg-gray-100 rounded-md">
-                        No results found.
+                      <div className="text-gray-400 text-sm px-4 py-2 text-center italic">
+                        Start typing to search...
                       </div>
-                    )
-                  ) : (
-                    <div className="text-gray-400 text-sm px-4 py-2 text-center italic">
-                      Start typing to search...
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right */}
+          <div className="flex items-center gap-4">
+            <Link to="/profile">
+              <div className="flex items-center gap-2">
+                <img
+                  src={profile}
+                  alt="User"
+                  className="w-8 h-8 object-cover rounded-full border"
+                />
+                <span className="text-sm text-gray-800 font-semibold">Profile</span>
               </div>
-            )}
+            </Link>
+
+            <Button onClick={handleClick} className="!text-gray-800 !normal-case">Menu</Button>
+
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              slotProps={{
+                paper: { elevation: 1, sx: { mt: 1.5, minWidth: 180 } },
+              }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+              <Link to="/account"><MenuItem onClick={handleClose}><MdAccountCircle className="mr-2" /> Account</MenuItem></Link>
+              <Link to="/register"><MenuItem onClick={handleClose}><MdAccountCircle className="mr-2" /> Sign Up</MenuItem></Link>
+              <MenuItem onClick={handleLogout}><IoIosLogOut className="mr-2" /> Log Out</MenuItem>
+            </Menu>
           </div>
         </div>
+      </header>
 
-        {/* Right */}
-        <div className="flex items-center gap-4">
-          <Link to="/profile">
-            <div className="flex items-center gap-2">
+      {/* 📦 Post Modal */}
+      {postModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-[90%] max-w-md relative space-y-4">
+            <h2 className="text-lg font-semibold text-gray-700">Create Post</h2>
+
+            {selectedImage && (
+           <div className='w-[100px] h-[100px] mb-15'>
               <img
-                src={profile}
-                alt="User"
-                className="w-8 h-8 object-cover rounded-full border"
+                src={URL.createObjectURL(selectedImage)}
+                alt="preview"
+                className={`w-full object-cover rounded-lg `}
               />
-              <span className="text-sm text-gray-800 font-semibold">Profile</span>
+           </div>
+            )}
+
+          
+
+            <textarea
+              rows={3}
+              placeholder="Write a caption..."
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              className="w-full border px-3 py-2 rounded text-sm focus:outline-none focus:border-blue-500"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setPostModalOpen(false)}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitPost}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+              >
+                Post
+              </button>
             </div>
-          </Link>
-
-          <Button onClick={handleClick} className="!text-gray-800 !normal-case">
-            Menu
-          </Button>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            slotProps={{
-              paper: {
-                elevation: 1,
-                sx: { mt: 1.5, minWidth: 180 },
-              },
-            }}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            <Link to="/account">
-              <MenuItem onClick={handleClose}>
-                <MdAccountCircle className="mr-2" /> Account
-              </MenuItem>
-            </Link>
-            <Link to="/register">
-              <MenuItem onClick={handleClose}>
-                <MdAccountCircle className="mr-2" /> Sign Up
-              </MenuItem>
-            </Link>
-            <MenuItem onClick={handleLogout}>
-              <IoIosLogOut className="mr-2" /> Log Out
-            </MenuItem>
-          </Menu>
+          </div>
         </div>
-      </div>
-    </header>
+      )}
+    </>
   );
 };
 

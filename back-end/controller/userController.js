@@ -395,6 +395,8 @@ if(!currentUserId || !targetUserId){
 export const unfollowUser = async (req, res) => {
   try {
     const { currentUserId, targetUserId } = req.body;
+
+    
  if (!currentUserId || !targetUserId ) {
       return res.status(404).json({ message: "currentUserId, targetUserId required " });
     }
@@ -431,7 +433,7 @@ export const unfollowUser = async (req, res) => {
 export const getUserFollowersFollowing = async (req, res) => {
   try {
     const userId = req.params.userId;
-console.log("userID",userId)
+
     // Validate ObjectId format (extra safety)
     if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: "Invalid user ID format" });
@@ -440,6 +442,7 @@ console.log("userID",userId)
     const user = await User.findById(userId)
       .populate("followers.userId", "username profilePic")
       .populate("following.userId", "username profilePic");
+      console.log(user)
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });

@@ -115,7 +115,7 @@ const UserInfo = () => {
 
           <div className="flex gap-8 text-sm text-gray-700 mb-3">
             <span><strong>{posts.length}</strong> posts</span>
-            <Link to={`/${anotherUserID }/followers`}>
+            <Link to={`/${anotherUserID}/followers`}>
             <span><strong>{followers.length}</strong> followers</span>
             </Link>
             <Link to={`/${anotherUserID }/following`}>
