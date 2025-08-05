@@ -44,7 +44,7 @@ router.post("/reset-password", resetPassword);
 
 router.post("/follow", followUser);
 router.post("/unfollow", unfollowUser);
-router.get("/:userId/follow-data", getUserFollowersFollowing);
+router.get("/:userId/followers", getUserFollowersFollowing);
 
 // router.get("/user/:targetUserId/followers-with-status", getUserFollowersWithStatus);
 

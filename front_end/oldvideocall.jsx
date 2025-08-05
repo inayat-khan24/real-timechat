@@ -1,98 +1,160 @@
-import React, { use, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { NavLink, useParams } from 'react-router-dom';
 
-const UserInfo = () => {
-const [loading,setLoading] = useState(true)
-  const [otherUserinfo,setOtherUserinfo] = useState({})
-const {anotherUserID}= useParams()
+const Followers = () => {
+  const [followers, setFollowers] = useState([]);
+  const [otherUserinfo, setOtherUserinfo] = useState({});
+  
+  const [followed, setFollowed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [username, setUserName] = useState("");
+  const userName = useParams();
 
- const anotherUserIDFetch = async () => {
+  const currentUserId = localStorage.getItem("userId");
+  const anotherUserID = localStorage.getItem("anotherUser");
 
-      try {
-        const res = await fetch(`http://localhost:5000/api/auth/getOtherUserDetails/${anotherUserID}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-           
-          }
-        });
-        const data = await res.json();
-        console.log(data)
-        setOtherUserinfo(data[0]);
-        setLoading(false)
-      
-      } catch (err) {
-        console.error("Failed to fetch user details", err);
-      }
-    };
+  const userFollowersFetch = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/auth/${anotherUserID ? anotherUserID : currentUserId}/follow-data`);
+      const data = await res.json();
+      console.log(data);
+      const userData = data.followers || {};
+
+      setUserName(data.username);
+
+      const followersWithStatus = (userData || []).map(f => ({
+        ...f,
+        isFollowing: f.userId?.toString() === currentUserId
+      }));
+
+      setFollowers(followersWithStatus);
+      setLoading(false);
+    } catch (error) {
+      console.log("Error fetching followers:", error);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-anotherUserIDFetch() // fetch user details on mount
-setLoading(false)
-  }, []);
+    userFollowersFetch();
+  }, [anotherUserID, currentUserId]);
 
+  const handleFollowToggle = async (userId, isFollowing, id) => {
+    console.log(isFollowing)
+    const endpoint = isFollowing
+      ? "http://localhost:5000/api/auth/unfollow"
+      : "http://localhost:5000/api/auth/follow";
 
+    setFollowers(prev =>
+      prev.map(f =>
+        f._id === userId ? { ...f, isFollowing: !isFollowing } : f
+      )
+    );
 
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentUserId,
+          targetUserId: id,
+        }),
+      });
 
-if(loading) return <div>Loading....</div>
+      const contentType = res.headers.get("content-type");
+      if (!res.ok || !contentType?.includes("application/json")) {
+        const text = await res.text();
+        throw new Error(`Unexpected response: ${text}`);
+      }
+
+      const result = await res.json();
+      if (res.ok) {
+        setFollowed(!followed);
+        const updated = await fetch(`http://localhost:5000/api/auth/getOtherUserDetails/${anotherUserID}`);
+        const updatedData = await updated.json();
+        console.log(updatedData)
+        setOtherUserinfo(updatedData[0] || {});
+      } else {
+        alert(result.message || 'Something went wrong');
+      }
+    } catch (error) {
+      console.error("Follow/Unfollow Error", error);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-10 text-lg font-semibold">Loading user profile...</div>;
+  }
+
   return (
-//     <div className="max-w-5xl mx-auto p-4">
-//       {/* Top Profile Section */}
-//       <div className="flex flex-col md:flex-row items-center gap-8 border-b pb-6">
-//         {/* Profile Image */}
-//         <img
-//           src={profile}
-//           alt="Profile"
-//           className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border"
-//         />
+    <div className="max-w-xl mx-auto p-6 font-sans">
+      <h2 className="text-2xl text-center font-semibold mb-2">{userName.anotherUserID}</h2>
 
-//         {/* User Info */}
-//         <div className="flex-1">
-//           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-//             <h2 className="text-xl font-semibold">{username}</h2>
-//             <Link to="/account">
-//             <button className="px-4 py-1 text-sm font-medium border rounded-md hover:bg-gray-100">
-//               Edit Profile
-//             </button>
-//             </Link>
-//           </div>
+      <div className='flex gap-4 items-center justify-center '>
+        <NavLink
+          to={`/${userName.anotherUserID}/followers`}
+          className={({ isActive }) =>
+            `text-lg font-medium px-4 py-2 rounded-md transition ${isActive ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-black'}`
+          }
+        >
+          Followers
+        </NavLink>
 
-//           <div className="flex gap-6 text-sm text-gray-700">
-//             <span><strong>{posts.length}</strong> posts</span>
-//             <span><strong>1.2k</strong> followers</span>
-//             <span><strong>180</strong> following</span>
-//           </div>
+        <NavLink
+          to={`/${userName.anotherUserID}/following`}
+          className={({ isActive }) =>
+            `text-lg font-medium px-4 py-2 rounded-md transition ${isActive ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-black'}`
+          }
+        >
+          Following
+        </NavLink>
+      </div>
 
-//           <div className="mt-2 text-sm">
-//             <p className="font-semibold">{name}</p>
-//             <p className="text-gray-600">{bios}</p>
-//           </div>
-//         </div>
-//       </div>
+      {followers.length === 0 ? (
+        <p className="text-gray-500 text-center">No followers yet.</p>
+      ) : (
+        <div className="space-y-4">
+          {followers.map(follower => (
+            <div
+              key={follower._id}
+              className="flex items-center justify-between border-b pb-3"
+            >
+              <div className="flex items-center gap-4">
+                <img
+                  src={
+                    follower.profilePic
+                      ? `http://localhost:5000/uploads/${follower.profilePic}`
+                      : `https://ui-avatars.com/api/?name=${follower.username}`
+                  }
+                  alt="profile"
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <p className="text-sm font-semibold">{follower.username}</p>
+                  <p className="text-xs text-gray-500">{follower.name}</p>
+                </div>
+              </div>
 
-//       {/* Posts Gallery */}
-//      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
-//   {posts.map((src, idx) => (
-//     <div key={idx} className="w-full">
-//       <img
-//         src={`http://localhost:5000/postUploads/${src.PostImage}`}
-//         alt={`Post ${idx + 1}`}
-//         className="w-full aspect-square object-cover hover:opacity-80 cursor-pointer rounded-md"
-//       />
-//       <div className='flex items-center gap-2 mt-2 px-1'>
-//         <span className='font-bold'>{username}</span>
-//         <span className="truncate">{src.caption}</span>
-//       </div>
-//     </div>
-//   ))}
-// </div>
-
-
-      
-//     </div>
-<div>
-</div>
+              {currentUserId !== follower._id && (
+                <button
+                  onClick={() => handleFollowToggle(follower._id, follower.isFollowing, follower.userId?._id)}
+                  className={`px-5 py-1 text-sm rounded-full transition font-medium ${
+                    follower.isFollowing
+                      ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {follower.isFollowing ? 'Unfollow' : 'Follow'}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
-export default UserInfo;
+export default Followers;

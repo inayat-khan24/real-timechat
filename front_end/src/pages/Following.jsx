@@ -2,123 +2,142 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 
 const Following = () => {
-  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [username, setUserName] = useState("");
- 
-  const currentUserId = localStorage.getItem("userId");
-    const anotherUserID  = localStorage.getItem("anotherUser");
-const userName = useParams()
-  const userFollowersFetch = async () => {
-    const fetchh = `http://localhost:5000/api/auth/user/686f784c6499604edff68a29/followers-with-status?loginUserId=688358dd2d52ef039d7213b6`
+  const [username, setUsername] = useState('');
+  const { anotherUserID } = useParams();
+
+  const currentUserId = localStorage.getItem('userId');
+  const targetUserId = localStorage.getItem('anotherUser');
+
+  const fetchFollowing = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/${anotherUserID? anotherUserID :currentUserId }/follow-data`);
+      const res = await fetch(
+        `http://localhost:5000/api/auth/${targetUserId}/followers?currentUserId=${currentUserId}`
+      );
       const data = await res.json();
-     console.log
-      const userData = data.following  || {};
+      console.log(data);
 
-      setUserName(userData.username);
-
-      // Add isFollowing flag to each follower
-      const followersWithStatus = (userData || []).map(f => ({
-        ...f,
-        isFollowing: f.userId?.toString() === currentUserId // ✅ Only one definition
-      }));
-
-      setFollowers(followersWithStatus);
+      setUsername(data.username || '');
+      setFollowing(data.following || []);
       setLoading(false);
     } catch (error) {
-      console.log("Error fetching followers:", error);
+      console.error('Error fetching following:', error);
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    userFollowersFetch();
-  }, []);
+    fetchFollowing();
+  }, [targetUserId, currentUserId]);
 
-  // Toggle follow/unfollow (just local state update for now)
-  const handleFollowToggle = (userId, isFollowing) => {
-    setFollowers(prev =>
-      prev.map(f =>
-        f._id === userId ? { ...f, isFollowing: !isFollowing } : f
-      )
-    );
+  const handleFollowToggle = async (followerId, isCurrentlyFollowing) => {
+    const endpoint = isCurrentlyFollowing
+      ? 'http://localhost:5000/api/auth/unfollow'
+      : 'http://localhost:5000/api/auth/follow';
+
+    try {
+      await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentUserId,
+          targetUserId: followerId,
+        }),
+      });
+
+      // Refresh after follow/unfollow
+      fetchFollowing();
+    } catch (error) {
+      console.error('Follow/Unfollow Error', error);
+    }
   };
 
   if (loading) {
-    return <div className="text-center py-10 text-lg font-semibold">Loading user profile...</div>;
+    return (
+      <div className="text-center py-10 text-lg font-semibold">
+        Loading user profile...
+      </div>
+    );
   }
 
   return (
     <div className="max-w-xl mx-auto p-6 font-sans">
-      <h2 className="text-2xl text-center font-semibold mb-2">{userName.anotherUserID}</h2>
-    <div className='flex gap-4 items-center justify-center '>
- <NavLink
-  to={`/${userName.anotherUserID}/followers`}
-  className={({ isActive }) =>
-    `text-lg font-medium px-4 py-2 rounded-md transition ${
-      isActive ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-black'
-    }`
-  }
->
-  Followers
-</NavLink>
+      <h2 className="text-2xl text-center font-semibold mb-2">
+        {username || 'User'}'s Following 
+      </h2>
 
-<NavLink
-  to={`/${userName.anotherUserID}/following`}
-  className={({ isActive }) =>
-    `text-lg font-medium px-4 py-2 rounded-md transition ${
-      isActive ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-black'
-    }`
-  }
->
-  Following
-</NavLink>
+      <div className="flex gap-4 items-center justify-center mb-4">
+        <NavLink
+          to={`/${anotherUserID}/followers`}
+          className={({ isActive }) =>
+            `text-lg font-medium px-4 py-2 rounded-md transition ${
+              isActive
+                ? 'text-black border-b-2 border-black'
+                : 'text-gray-500 hover:text-black'
+            }`
+          }
+        >
+        Followers
+        </NavLink>
 
-
+        <NavLink
+          to={`/${anotherUserID}/following`}
+          className={({ isActive }) =>
+            `text-lg font-medium px-4 py-2 rounded-md transition ${
+              isActive
+                ? 'text-black border-b-2 border-black'
+                : 'text-gray-500 hover:text-black'
+            }`
+          }
+        >
+         {following.length} Following
+        </NavLink>
       </div>
 
-      {followers.length === 0 ? (
+      {following.length === 0 ? (
         <p className="text-gray-500 text-center">No following yet.</p>
       ) : (
         <div className="space-y-4">
-          {followers.map(follower => (
-            <div
-              key={follower._id}
-              className="flex items-center justify-between border-b pb-3"
-            >
-              <div className="flex items-center gap-4">
-                <img
-                  src={
-                    follower.profilePic
-                      ? `http://localhost:5000/uploads/${follower.profilePic}`
-                      : `https://ui-avatars.com/api/?name=${follower.username}`
-                  }
-                  alt="profile"
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div>
-                  <p className="text-sm font-semibold">{follower.username}</p>
-                  <p className="text-xs text-gray-500">{follower.name}</p>
+          {following.map((follower, i) => {
+            const id = follower.userId?._id || follower.userId || i;
+            return (
+              <div
+                key={id}
+                className="flex items-center justify-between border-b pb-3"
+              >
+                <div className="flex items-center gap-4">
+                  <img
+                    src={
+                      follower.profilePic
+                        ? `http://localhost:5000/uploads/${follower.profilePic}`
+                        : `https://ui-avatars.com/api/?name=${follower.username}`
+                    }
+                    alt="profile"
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold">{follower.username}</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Show Follow/Unfollow if this follower is not the current user */}
-              {currentUserId !== follower._id && (
-                <button
-                  onClick={() => handleFollowToggle(follower._id, follower.isFollowing)}
-                  className={`px-5 py-1 text-sm rounded-full transition font-medium ${
-                    !follower.isFollowing
-                      ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                  }`}
-                >
-                  {!follower.isFollowing ? 'Following' : 'Follow'}
-                </button>
-              )}
-            </div>
-          ))}
+                {currentUserId !== (follower.userId?._id || follower.userId)?.toString() && (
+                  <button
+                    onClick={() =>
+                      handleFollowToggle(follower.userId?._id || follower.userId, follower.isFollow)
+                    }
+                    className={`px-5 py-1 text-sm rounded-full transition font-medium ${
+                      follower.isFollow
+                        ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    {follower.isFollow ? 'Unfollow' : 'Follow'}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

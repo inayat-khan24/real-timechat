@@ -4,108 +4,97 @@ import { NavLink, useParams } from 'react-router-dom';
 const Followers = () => {
   const [followers, setFollowers] = useState([]);
   const [otherUserinfo, setOtherUserinfo] = useState({});
-  console.log(followers);
-  const [followed, setFollowed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [username, setUserName] = useState("");
-  const userName = useParams();
+  const [username, setUserName] = useState('');
+  const { anotherUserID } = useParams();
 
-  const currentUserId = localStorage.getItem("userId");
-  const anotherUserID = localStorage.getItem("anotherUser");
+  const currentUserId = localStorage.getItem('userId');
+  const targetUserId = localStorage.getItem('anotherUser');
 
   const userFollowersFetch = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/${anotherUserID ? anotherUserID : currentUserId}/follow-data`);
+      const res = await fetch(
+        `http://localhost:5000/api/auth/${targetUserId}/followers?currentUserId=${currentUserId}`
+      );
       const data = await res.json();
-      console.log(data);
-      const userData = data.followers || {};
-
-      setUserName(data.username);
-
-      const followersWithStatus = (userData || []).map(f => ({
-        ...f,
-        isFollowing: f.userId?.toString() === currentUserId
-      }));
-
-      setFollowers(followersWithStatus);
+      setFollowers(data.followers || []);
+      setUserName(data.username || '');
       setLoading(false);
     } catch (error) {
-      console.log("Error fetching followers:", error);
+      console.log('Error fetching followers:', error);
       setLoading(false);
     }
   };
 
   useEffect(() => {
     userFollowersFetch();
-  }, [anotherUserID, currentUserId]);
+  }, [targetUserId, currentUserId]);
 
-  const handleFollowToggle = async (userId, isFollowing, id) => {
-    console.log(isFollowing)
-    const endpoint = isFollowing
-      ? "http://localhost:5000/api/auth/unfollow"
-      : "http://localhost:5000/api/auth/follow";
-
-    setFollowers(prev =>
-      prev.map(f =>
-        f._id === userId ? { ...f, isFollowing: !isFollowing } : f
-      )
-    );
+  const handleFollowToggle = async (followerId, isCurrentlyFollowing, targetId) => {
+    const endpoint = isCurrentlyFollowing
+      ? 'http://localhost:5000/api/auth/unfollow'
+      : 'http://localhost:5000/api/auth/follow';
 
     try {
       const res = await fetch(endpoint, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           currentUserId,
-          targetUserId: id,
+          targetUserId: targetId,
         }),
       });
 
-      const contentType = res.headers.get("content-type");
-      if (!res.ok || !contentType?.includes("application/json")) {
-        const text = await res.text();
-        throw new Error(`Unexpected response: ${text}`);
-      }
+      if (!res.ok) throw new Error('Something went wrong');
 
-      const result = await res.json();
-      if (res.ok) {
-        setFollowed(!followed);
-        const updated = await fetch(`http://localhost:5000/api/auth/getOtherUserDetails/${anotherUserID}`);
-        const updatedData = await updated.json();
-        console.log(updatedData)
-        setOtherUserinfo(updatedData[0] || {});
-      } else {
-        alert(result.message || 'Something went wrong');
-      }
+      const updated = await fetch(
+        `http://localhost:5000/api/auth/${targetUserId}/followers?currentUserId=${currentUserId}`
+      );
+      const updatedData = await updated.json();
+      setFollowers(updatedData.followers || []);
     } catch (error) {
-      console.error("Follow/Unfollow Error", error);
+      console.error('Follow/Unfollow Error', error);
     }
   };
 
   if (loading) {
-    return <div className="text-center py-10 text-lg font-semibold">Loading user profile...</div>;
+    return (
+      <div className="text-center py-10 text-lg font-semibold">
+        Loading user profile...
+      </div>
+    );
   }
 
   return (
     <div className="max-w-xl mx-auto p-6 font-sans">
-      <h2 className="text-2xl text-center font-semibold mb-2">{userName.anotherUserID}</h2>
+      <h2 className="text-2xl text-center font-semibold mb-2">
+        {username || 'User'}'s Followers
+      </h2>
 
-      <div className='flex gap-4 items-center justify-center '>
+      <div className="flex gap-4 items-center justify-center mb-4">
         <NavLink
-          to={`/${userName.anotherUserID}/followers`}
+          to={`/${anotherUserID}/followers`}
           className={({ isActive }) =>
-            `text-lg font-medium px-4 py-2 rounded-md transition ${isActive ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-black'}`
+            `text-lg font-medium px-4 py-2 rounded-md transition ${
+              isActive
+                ? 'text-black border-b-2 border-black'
+                : 'text-gray-500 hover:text-black'
+            }`
           }
         >
-          Followers
+         {followers.length} Followers
         </NavLink>
 
         <NavLink
-          to={`/${userName.anotherUserID}/following`}
+          to={`/${anotherUserID}/following`}
           className={({ isActive }) =>
-            `text-lg font-medium px-4 py-2 rounded-md transition ${isActive ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-black'}`
+            `text-lg font-medium px-4 py-2 rounded-md transition ${
+              isActive
+                ? 'text-black border-b-2 border-black'
+                : 'text-gray-500 hover:text-black'
+            }`
           }
         >
           Following
@@ -116,9 +105,9 @@ const Followers = () => {
         <p className="text-gray-500 text-center">No followers yet.</p>
       ) : (
         <div className="space-y-4">
-          {followers.map(follower => (
+          {followers.map((follower) => (
             <div
-              key={follower._id}
+              key={follower.userId}
               className="flex items-center justify-between border-b pb-3"
             >
               <div className="flex items-center gap-4">
@@ -133,20 +122,25 @@ const Followers = () => {
                 />
                 <div>
                   <p className="text-sm font-semibold">{follower.username}</p>
-                  <p className="text-xs text-gray-500">{follower.name}</p>
                 </div>
               </div>
 
-              {currentUserId !== follower._id && (
+              {currentUserId !== follower.userId.toString() && (
                 <button
-                  onClick={() => handleFollowToggle(follower._id, follower.isFollowing, follower.userId?._id)}
+                  onClick={() =>
+                    handleFollowToggle(
+                      follower.userId,
+                      follower.isFollow,
+                      follower.userId
+                    )
+                  }
                   className={`px-5 py-1 text-sm rounded-full transition font-medium ${
-                    follower.isFollowing
+                    follower.isFollow
                       ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
-                  {follower.isFollowing ? 'Unfollow' : 'Follow'}
+                  {follower.isFollow ? 'Unfollow' : 'Follow'}
                 </button>
               )}
             </div>

@@ -12,7 +12,7 @@ const followerSchema = new mongoose.Schema({
   
   username: String,
   profilePic: String,
-  
+ isFollow : {type: Boolean, default:false},
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -24,7 +24,7 @@ const followingSchema = new mongoose.Schema({
   },
   username: String,
   profilePic: String,
-  isFollow : {type: Boolean, default:false} ,
+  isFollow : {type: Boolean, default:false},
   createdAt: { type: Date, default: Date.now },
 });
 

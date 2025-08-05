@@ -336,8 +336,8 @@ try {
 
 export const followUser = async (req, res) => {
   try {
-    const { currentUserId, targetUserId } = req.body;
-   
+    const { currentUserId, targetUserId,isFollow} = req.body;
+   console.log(isFollow)
 if(!currentUserId || !targetUserId){
   return res.status(404).json({
     success : false,
@@ -377,6 +377,7 @@ if(!currentUserId || !targetUserId){
       userId: currentUser._id,
       username: currentUser.username,
       profilePic: currentUser.profilePic || null,
+      isFollow 
     });
 
     await currentUser.save();
@@ -394,7 +395,7 @@ if(!currentUserId || !targetUserId){
 // Unfollow a user
 export const unfollowUser = async (req, res) => {
   try {
-    const { currentUserId, targetUserId } = req.body;
+    const { currentUserId, targetUserId,isFollow} = req.body;
 
     
  if (!currentUserId || !targetUserId ) {
@@ -432,28 +433,41 @@ export const unfollowUser = async (req, res) => {
 
 export const getUserFollowersFollowing = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const { userId } = req.params; // jis user ke followers dekhne hain
+    const currentUserId = req.query.currentUserId; // currently logged-in user ka ID query me aayega
 
-    // Validate ObjectId format (extra safety)
-    if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ error: "Invalid user ID format" });
+    // validate IDs
+    if (!userId || !currentUserId) {
+      return res.status(400).json({ message: "userId and currentUserId are required" });
     }
 
-    const user = await User.findById(userId)
-      .populate("followers.userId", "username profilePic")
-      .populate("following.userId", "username profilePic");
-      console.log(user)
+    const user = await User.findById(userId).lean(); // lean() is used to get plain JS object
+    const currentUser = await User.findById(currentUserId).lean();
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
+    if (!user || !currentUser) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({
-      followers: user.followers,
-      following: user.following,
-    });
+    // Set of IDs that current user is following
+    const followingSet = new Set(currentUser.following.map(f => f.userId.toString()));
+
+    // Map followers with isFollow flag
+    const followersWithStatus = user.followers.map(follower => ({
+      ...follower,
+      isFollow: followingSet.has(follower.userId.toString()),
+    }));
+
+       const followingWithStatus = user.following.map(following => ({
+      ...following,
+      isFollow: followingSet.has(following.userId.toString()),
+    }));
+
+    res.status(200).json({ followers: followersWithStatus,
+      following : followingWithStatus
+     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Get Followers Error:", err);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
