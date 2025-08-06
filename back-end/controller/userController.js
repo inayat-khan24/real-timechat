@@ -466,8 +466,64 @@ export const getUserFollowersFollowing = async (req, res) => {
       following : followingWithStatus
      });
   } catch (err) {
-    console.error("Get Followers Error:", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Get Followers Error:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+export const loginFollowersFollowing = async (req, res) => {
+  try {
+   const { userId } = req.params;
+  
+
+    // Check if both IDs exist
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId or currentUserId" });
+    }
+
+    // Validate IDs format
+    const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+    if (!objectIdRegex.test(userId) || !objectIdRegex.test(userId)) {
+      return res.status(400).json({ error: "Invalid user ID format" });
+    }
+
+    // Get the user whose followers/following we're checking
+    const user = await User.findById(userId)
+      .populate("followers.userId", "username profilePic")
+      
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Get logged-in user's following list to determine isFollow
+    const currentUser = await User.findById(userId);
+
+    if (!currentUser) {
+      return res.status(404).json({ message: "Current user not found." });
+    }
+
+    // Build a Set of currentUser's following IDs for quick lookup
+    const currentUserFollowingSet = new Set(
+      currentUser.following.map((f) => f.userId.toString())
+    );
+
+    // Add isFollow to each follower
+    const followersWithFollowStatus = user.followers.map((follower) => {
+      return {
+        ...follower.toObject(),
+        isFollow: currentUserFollowingSet.has(follower.userId._id.toString()),
+      };
+    });
+
+    res.status(200).json({
+      followers: followersWithFollowStatus,
+      following: user.following,
+    });
+  } catch (err) {
+    console.error("Error in loginFollowersFollowing:", err);
+    res.status(500).json({ error: err.message });
   }
 };
 

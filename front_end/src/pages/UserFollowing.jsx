@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 
-const Following = () => {
+const UserFollowing = () => {
   const [following, setFollowing] = useState([]);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState('');
@@ -13,7 +13,7 @@ const Following = () => {
   const fetchFollowing = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/auth/${targetUserId}/followers?currentUserId=${currentUserId}`
+        `http://localhost:5000/api/auth/${currentUserId}/follow-data`
       );
       const data = await res.json();
       console.log(data);
@@ -32,7 +32,7 @@ const Following = () => {
   }, [targetUserId, currentUserId]);
 
   const handleFollowToggle = async (followerId, isCurrentlyFollowing) => {
-    const endpoint = isCurrentlyFollowing
+    const endpoint =  !isCurrentlyFollowing
       ? 'http://localhost:5000/api/auth/unfollow'
       : 'http://localhost:5000/api/auth/follow';
 
@@ -64,7 +64,7 @@ const Following = () => {
   return (
     <div className="max-w-xl mx-auto p-6 font-sans">
       <h2 className="text-2xl text-center font-semibold mb-2">
-        {anotherUserID || 'User'} Following 
+        {anotherUserID || 'User'}'s Following 
       </h2>
 
       <div className="flex gap-4 items-center justify-center mb-4">
@@ -127,12 +127,12 @@ const Following = () => {
                       handleFollowToggle(follower.userId?._id || follower.userId, follower.isFollow)
                     }
                     className={`px-5 py-1 text-sm rounded-full transition font-medium ${
-                      follower.isFollow
+                      !follower.isFollow
                         ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                         : 'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
                   >
-                    {follower.isFollow ? 'Unfollow' : 'Follow'}
+                    { !follower.isFollow ? 'Following' : 'Follow'}
                   </button>
                 )}
               </div>
@@ -144,4 +144,4 @@ const Following = () => {
   );
 };
 
-export default Following;
+export default UserFollowing;

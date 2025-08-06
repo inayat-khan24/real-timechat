@@ -28,6 +28,7 @@ const Followers = () => {
 
   useEffect(() => {
     userFollowersFetch();
+    
   }, [targetUserId, currentUserId]);
 
   const handleFollowToggle = async (followerId, isCurrentlyFollowing, targetId) => {
@@ -58,6 +59,10 @@ const Followers = () => {
       console.error('Follow/Unfollow Error', error);
     }
   };
+useEffect(()=>{
+  userFollowersFetch();
+ 
+},[])
 
   if (loading) {
     return (
@@ -70,7 +75,7 @@ const Followers = () => {
   return (
     <div className="max-w-xl mx-auto p-6 font-sans">
       <h2 className="text-2xl text-center font-semibold mb-2">
-        {username || 'User'}'s Followers
+        {anotherUserID  || 'User'} Followers
       </h2>
 
       <div className="flex gap-4 items-center justify-center mb-4">

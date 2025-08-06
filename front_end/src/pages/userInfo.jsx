@@ -7,7 +7,7 @@ const UserInfo = () => {
   const [followed, setFollowed] = useState(false);
   const { anotherUserID } = useParams();
   const currentUserId = localStorage.getItem("userId");
- 
+
 
   // Fetch other user's profile
   useEffect(() => {

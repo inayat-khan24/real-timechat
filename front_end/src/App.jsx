@@ -15,6 +15,8 @@ import Profile from "./pages/Profile.jsx";
 import UserInfo from "./pages/userInfo.jsx";
 import Followers from "./pages/Followers.jsx";
 import Following from "./pages/Following.jsx";
+import UserFollowers from "./pages/UserFollowers.jsx";
+import UserFollowing from "./pages/UserFollowing.jsx";
 
 function App() {
     const [userInfo, setUserInfo] = useState({
@@ -31,6 +33,7 @@ function App() {
   const token = localStorage.getItem("token");
   const [user, setUser] = useState(token);
    const userId = localStorage.getItem("userId");
+   const targetUserId = localStorage.getItem('anotherUser');
     const userDetails = async () => {
       try {
         const res = await fetch(`http://localhost:5000/api/auth/getUserDetails?userId=${userId}`, {
@@ -102,10 +105,10 @@ function App() {
   <Route path="/:anotherUserID" element={<UserInfo/>} />
 
   // followers and following
-  <Route path="/:anotherUserID/followers" element={<Followers/>} />
-  <Route path="/:anotherUserID/following" element={<Following/>} />
-
-
+  {/* <Route path="/:anotherUserID/followers" element={<Followers/>} />
+  <Route path="/:anotherUserID/following" element={<Following/>} /> */}
+<Route path="/:anotherUserID/followers" element={targetUserId? <Followers/> : <UserFollowers/>} />
+<Route path="/:anotherUserID/following" element={targetUserId? <Following/> :  <UserFollowing/>} /> 
         {/* 👇 Default Redirect */}
         <Route path="*" element={<Navigate to={user ? "/private" : "/login"} />} />
       </Routes>

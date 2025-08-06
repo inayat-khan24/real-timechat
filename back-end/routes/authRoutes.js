@@ -6,7 +6,8 @@ import { forgotPassword, forgotpassword, getUserDetails,getalluser,
       getOtherUserDetails,
       followUser,
       unfollowUser,
-      getUserFollowersFollowing} from "../controller/userController.js";
+      getUserFollowersFollowing,
+      loginFollowersFollowing} from "../controller/userController.js";
 import { upload } from "../controller/uploadController.js";
 import { ensureAuthenticated } from "../middleware/auth.js";
 // import { getUserFollowersWithStatus } from "../controller/anotheruser.js";
@@ -46,6 +47,6 @@ router.post("/follow", followUser);
 router.post("/unfollow", unfollowUser);
 router.get("/:userId/followers", getUserFollowersFollowing);
 
-// router.get("/user/:targetUserId/followers-with-status", getUserFollowersWithStatus);
+router.get("/:userId/follow-data", loginFollowersFollowing);
 
 export default router;
