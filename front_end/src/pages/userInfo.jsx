@@ -28,7 +28,7 @@ const UserInfo = () => {
         console.error('Failed to fetch user details:', err);
       }
     };
-
+console.log("Type of anotherUserID:", typeof anotherUserID);
     fetchUserDetails();
   }, [anotherUserID, currentUserId]);
 

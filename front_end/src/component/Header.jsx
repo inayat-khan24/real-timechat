@@ -4,6 +4,7 @@ import { IoIosLogOut } from 'react-icons/io';
 import { MdAccountCircle } from 'react-icons/md';
 import { AiOutlineMessage } from 'react-icons/ai';
 import { IoCameraOutline, IoSearch } from "react-icons/io5";
+import { ImHome } from "react-icons/im";
 import { Link, useNavigate } from 'react-router-dom';
 
 const Header = ({ userDetails, profilePic, setUser }) => {
@@ -20,6 +21,7 @@ const Header = ({ userDetails, profilePic, setUser }) => {
 
   const open = Boolean(anchorEl);
   const searchRef = useRef(null);
+const userNAme = localStorage.getItem("username")
 
   const profile = profilePic
     ? `http://localhost:5000/uploads/${profilePic}`
@@ -29,6 +31,7 @@ const Header = ({ userDetails, profilePic, setUser }) => {
     try {
       const res = await fetch("http://localhost:5000/api/auth/search");
       const result = await res.json();
+      
       setUserSearch(result.users || []);
     } catch (error) {
       console.error("Search fetch failed", error);
@@ -100,6 +103,12 @@ const Header = ({ userDetails, profilePic, setUser }) => {
         <div className="flex items-center justify-between px-6 py-3">
           {/* Left */}
           <div className="flex items-center gap-4">
+ <Link to="/" className="flex items-center gap-2 text-gray-700 hover:text-black text-[1rem]">
+              <ImHome className="text-xl" />
+              
+            </Link>
+
+
             <Link to="/private" className="flex items-center gap-2 text-gray-700 hover:text-black text-[1rem]">
               <AiOutlineMessage className="text-xl" />
               <span>Messages</span>
@@ -176,7 +185,7 @@ const Header = ({ userDetails, profilePic, setUser }) => {
                   alt="User"
                   className="w-8 h-8 object-cover rounded-full border"
                 />
-                <span className="text-sm text-gray-800 font-semibold">Profile</span>
+                <span className="text-sm text-gray-800 font-semibold">{userNAme}</span>
               </div>
             </Link>
 

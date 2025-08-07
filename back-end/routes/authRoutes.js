@@ -7,9 +7,11 @@ import { forgotPassword, forgotpassword, getUserDetails,getalluser,
       followUser,
       unfollowUser,
       getUserFollowersFollowing,
-      loginFollowersFollowing} from "../controller/userController.js";
+      loginFollowersFollowing,
+      Feeds} from "../controller/userController.js";
 import { upload } from "../controller/uploadController.js";
 import { ensureAuthenticated } from "../middleware/auth.js";
+
 // import { getUserFollowersWithStatus } from "../controller/anotheruser.js";
 
 const router = express.Router();
@@ -48,5 +50,7 @@ router.post("/unfollow", unfollowUser);
 router.get("/:userId/followers", getUserFollowersFollowing);
 
 router.get("/:userId/follow-data", loginFollowersFollowing);
+
+router.get("/feeds", Feeds);
 
 export default router;

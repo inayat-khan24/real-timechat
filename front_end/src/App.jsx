@@ -17,6 +17,7 @@ import Followers from "./pages/Followers.jsx";
 import Following from "./pages/Following.jsx";
 import UserFollowers from "./pages/UserFollowers.jsx";
 import UserFollowing from "./pages/UserFollowing.jsx";
+import Feeds from "./pages/Feeds.jsx";
 
 function App() {
     const [userInfo, setUserInfo] = useState({
@@ -60,6 +61,8 @@ function App() {
       name = {name}
       profilePic={profilePic} userDetails={userDetails}/>
       <Routes>
+
+          <Route path="/" element={<Feeds/>} />
         <Route path="/login" element={<Login setUser={setUser} userDetails={userDetails} />} />
         // forgotPassword
          <Route path="/forgot-password" element={<ForgotPassword/>} />

@@ -8,6 +8,7 @@ import { User } from "../models/User.js";
 import transporter from "../nodemailer/nodemailer.js";
 
 
+
 // sing up 
 export const singUp =  async (req, res) => {
   const { username,name ,email, password } = req.body;
@@ -527,3 +528,52 @@ export const loginFollowersFollowing = async (req, res) => {
   }
 };
 
+// login user feed 
+
+
+
+
+
+
+export const Feeds = async (req, res) => {
+  try {
+    const userId = req.query.userId;
+console.log(userId)
+    // Step 1: Find logged-in user
+    const user = await User.findById(userId);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Step 2: Get list of followed users' IDs + self
+    const followingIds = user.following.map(f => f.userId.toString());
+    followingIds.push(userId); // include self
+
+    // Step 3: Find all these users
+    const users = await User.find({ _id: { $in: followingIds } });
+
+    // Step 4: Extract all posts and attach user info
+    const feedPosts = [];
+
+    users.forEach(u => {
+      u.posts.forEach(post => {
+        feedPosts.push({
+          ...post.toObject(),
+          userId: {
+            _id: u._id,
+            username: u.username,
+            name: u.name,
+            profilePic: u.profilePic,
+          }
+        });
+      });
+    });
+
+    // Step 5: Sort by createdAt (latest first)
+    feedPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.status(200).json(feedPosts);
+  } catch (err) {
+    console.error("Feed Error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
