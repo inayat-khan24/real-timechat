@@ -18,6 +18,8 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   const [message, setMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [previewVideo, setPreviewVideo] = useState(null);
   const [theme, setTheme] = useState("default");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const chatEndRef = useRef(null);
@@ -57,7 +59,7 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   };
 
   const sendPrivateMessage = async () => {
-    if (!selectedUser || (!message.trim() && !selectedFile)) return;
+    if (!selectedUser || (!message.trim() && !selectedFile && !selectedVideo)) return;
 
     const roomId = [username, selectedUser].sort().join("_");
 
@@ -66,19 +68,16 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
     formData.append("receiver", selectedUser);
     formData.append("time", new Date().toLocaleTimeString());
 
-    if (selectedFile) {
-      formData.append("image", selectedFile);
-    }
-
-    if (message.trim()) {
-      formData.append("message", message);
-    }
+    if (selectedFile) formData.append("image", selectedFile);
+    if (selectedVideo) formData.append("video", selectedVideo);
+    if (message.trim()) formData.append("message", message);
 
     const msgToEmit = {
       sender: username,
       receiver: selectedUser,
       message: message || "",
       image: selectedFile ? URL.createObjectURL(selectedFile) : null,
+      video: selectedVideo ? URL.createObjectURL(selectedVideo) : null,
       time: new Date().toLocaleTimeString(),
     };
 
@@ -87,6 +86,8 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
     setMessage("");
     setSelectedFile(null);
     setPreviewImage(null);
+    setSelectedVideo(null);
+    setPreviewVideo(null);
     setShowEmojiPicker(false);
 
     try {
@@ -103,13 +104,22 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedFile(file);
-      setPreviewImage(URL.createObjectURL(file));
+      const fileType = file.type;
+      if (fileType.startsWith("image/")) {
+        setSelectedFile(file);
+        setSelectedVideo(null);
+        setPreviewImage(URL.createObjectURL(file));
+        setPreviewVideo(null);
+      } else if (fileType.startsWith("video/")) {
+        setSelectedVideo(file);
+        setSelectedFile(null);
+        setPreviewVideo(URL.createObjectURL(file));
+        setPreviewImage(null);
+      }
     }
   };
 
   const handleEmojiClick = (emojiData) => {
-   
     setMessage((prev) => prev + emojiData.emoji);
   };
 
@@ -174,10 +184,13 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 }`}
               >
                 <img
-                  src={`http://localhost:5000/uploads/${user.profilePic}`}
-                  className="h-8 w-8 rounded-full"
-                  alt="pf"
-                />
+  src={user.profilePic ? `http://localhost:5000/uploads/${user.profilePic}`
+   : 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3'}
+  className="h-8 w-8 rounded-full"
+  alt="pf"
+/>
+
+                
                 <span>{user.username}</span>
               </button>
             ))}
@@ -206,25 +219,25 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 >
                   <div
                     className={`max-w-xs p-3 rounded-md shadow ${
-                      isMe ? "bg-blue-500 " : "bg-[gray]"
+                      isMe ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
                     }`}
                   >
                     <div className="text-sm font-semibold">{msg.sender}</div>
-                    {msg.image ? (
+                    {msg.image && (
                       <img
                         src={`http://localhost:5000/uploads/${msg.image}`}
                         alt="chat"
                         className="mt-1 max-w-[200px] rounded-md"
                       />
-                    ) : (
-                      <div
-                        className={`${
-                          theme === "dark" ? "text-white" : "text-black"
-                        }`}
-                      >
-                        {msg.message}
-                      </div>
                     )}
+                    {msg.video && (
+                      <video
+                        src={`http://localhost:5000/uploads/${msg.video}`}
+                        controls
+                        className="mt-1 max-w-[200px] rounded-md"
+                      />
+                    )}
+                    {msg.message && <div>{msg.message}</div>}
                     <div className="text-[10px] text-right mt-1 opacity-70">
                       {msg.time}
                     </div>
@@ -238,12 +251,12 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
           {/* Input */}
           {selectedUser && (
             <div className="p-4 border-t bg-white flex items-center gap-2 relative">
-              {/* Image Upload */}
+              {/* File Upload */}
               <label>
                 <GrGallery className="text-2xl text-gray-600 cursor-pointer" />
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
                   className="hidden"
                   onChange={handleFileChange}
                 />
@@ -272,6 +285,7 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 onKeyDown={(e) => e.key === "Enter" && sendPrivateMessage()}
               />
 
+              {/* Send Button */}
               <button
                 onClick={sendPrivateMessage}
                 className="bg-blue-500 rounded-[200px] text-white px-4 py-2"
@@ -279,11 +293,23 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 <RiSendPlaneFill className="text-2xl" />
               </button>
 
+              {/* Preview Image */}
               {previewImage && (
                 <div className="absolute bottom-16 left-4">
                   <img
                     src={previewImage}
                     alt="preview"
+                    className="h-20 w-20 object-cover rounded border"
+                  />
+                </div>
+              )}
+
+              {/* Preview Video */}
+              {previewVideo && (
+                <div className="absolute bottom-16 left-4">
+                  <video
+                    src={previewVideo}
+                    controls
                     className="h-20 w-20 object-cover rounded border"
                   />
                 </div>
@@ -296,4 +322,4 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   );
 };
 
-export default PrivateChat;
+export default PrivateChat; 

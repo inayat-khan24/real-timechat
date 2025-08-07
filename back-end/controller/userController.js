@@ -147,44 +147,44 @@ export const updateprofile = async (req, res) => {
 };
 
 // forgot password
-export const forgotpassword = async (req,res)=>{
-  const { email } = req.body;
+// export const forgotpassword = async (req,res)=>{
+//   const { email } = req.body;
 
-  if (!email){
-    res.status(404).json({message:"email is required"})
-  }
+//   if (!email){
+//     res.status(404).json({message:"email is required"})
+//   }
 
-  const user = await User.findOne({ email });
+//   const user = await User.findOne({ email });
   
-  if (!user) return res.status(404).json({ message: "User not found" });
+//   if (!user) return res.status(404).json({ message: "User not found" });
 
-  const token = crypto.randomBytes(32).toString("hex");
-  user.resetToken = token;
-  user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
-  await user.save();
+//   const token = crypto.randomBytes(32).toString("hex");
+//   user.resetToken = token;
+//   user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
+//   await user.save();
 
-  const resetLink = `http://localhost:5173/reset-password/${token}`;
+//   const resetLink = `http://localhost:5173/reset-password/${token}`;
 
-  // Send email
-  try {
-    await transporter.sendMail({
-      from: "pcmy1092@gmail.com",
-      to: user.email,
-      subject: "Password Reset Request",
-      html: `
-        <h2>Reset your password</h2>
-        <p>Click the link below to reset your password:</p>
-        <a href="${resetLink}">${resetLink}</a>
-        <p>This link will expire in 1 hour.</p>
-      `,
-    });
+//   // Send email
+//   try {
+//     await transporter.sendMail({
+//       from: "pcmy1092@gmail.com",
+//       to: user.email,
+//       subject: "Password Reset Request",
+//       html: `
+//         <h2>Reset your password</h2>
+//         <p>Click the link below to reset your password:</p>
+//         <a href="${resetLink}">${resetLink}</a>
+//         <p>This link will expire in 1 hour.</p>
+//       `,
+//     });
 
-    res.json({ message: "Reset link sent to your email" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to send email" });
-  }
-}
+//     res.json({ message: "Reset link sent to your email" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Failed to send email" });
+//   }
+// }
 
 
 
@@ -192,32 +192,57 @@ export const forgotpassword = async (req,res)=>{
 
 // forgot password Api
 export const forgotPassword = async (req, res) => {
-  const { username,email} = req.body;
- if(!email || !username){res.status(404).json({
-    message : "email,username required"
-  })
- }
+  const { username, email } = req.body;
 
-  const user = await User.findOne({ username});
-  if (!user) return res.status(404).json({ error: "User not found" });
+  // Check if both fields are provided
+  if (!email || !username) {
+    return res.status(400).json({
+      success: false,
+      message: "Username and email are required",
+    });
+  }
 
+  // Find user by username
+  const user = await User.findOne({ username });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  // Check if email matches the user
+  if (user.email !== email) {
+    return res.status(400).json({
+      success: false,
+      message: "Email does not match ",
+    });
+  }
+
+  // Generate OTP and expiry
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+  const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
+  // Save to user document
   user.otp = otp;
   user.otpExpires = otpExpires;
   await user.save();
 
+  // Send OTP via email
   await transporter.sendMail({
     from: `"Reset Password" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Your OTP Code",
-    html: `<p>Your OTP code is <b>${otp}</b>. Valid for 5 minutes.</p>`
+    html: `<p>Your OTP code is <b>${otp}</b>. It is valid for 5 minutes.</p>`,
   });
 
-
-  res.json({ success: true, message: "OTP sent to email" });
+  res.json({
+    success: true,
+    message: "OTP sent to your email",
+  });
 };
+
 
 // verifyOtp Api
 export const verifyOtp = async (req, res) => {

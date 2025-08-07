@@ -1,6 +1,6 @@
 import express from "express";
 
-import { forgotPassword, forgotpassword, getUserDetails,getalluser,
+import { forgotPassword, getUserDetails,getalluser,
      login, resetPassword, singUp,
       updateprofile, verifyOtp,searchUser, 
       getOtherUserDetails,

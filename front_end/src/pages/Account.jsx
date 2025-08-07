@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { MdEdit } from "react-icons/md";
+import { handleError, handleSuccess } from '../component/notifiction';
+import { ToastContainer } from 'react-toastify';
 
 const Account = ({ userDetails, userInfo, editedData, setEditedData }) => {
   const [editingField, setEditingField] = useState(null);
@@ -11,10 +13,12 @@ const Account = ({ userDetails, userInfo, editedData, setEditedData }) => {
   const userId = localStorage.getItem("userId");
 
   useEffect(() => {
-    userDetails();
+    userDetails(); // fetch user info on mount
   }, []);
 
-  const handleEdit = (field) => setEditingField(field);
+  const handleEdit = (field) => {
+    setEditingField(field);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,13 +47,14 @@ const Account = ({ userDetails, userInfo, editedData, setEditedData }) => {
         }
       );
 
-      alert("Profile updated successfully!");
+      handleSuccess("Profile updated successfully!");
       setEditingField(null);
-      userDetails();
       setSelectedFile(null);
+      setPreviewImage(null);
+      userDetails();
     } catch (err) {
       console.error("Update failed", err);
-      alert("Something went wrong!");
+      handleError("Something went wrong while updating the profile!");
     }
   };
 
@@ -57,126 +62,94 @@ const Account = ({ userDetails, userInfo, editedData, setEditedData }) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
-      const imageURL = URL.createObjectURL(file);
-      setPreviewImage(imageURL);
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
 
   const profileImage = previewImage
     ? previewImage
-    : userInfo.profilePic
+    : userInfo?.profilePic
     ? `http://localhost:5000/uploads/${userInfo.profilePic}`
-    : "https://via.placeholder.com/100";
+    : "https://ui-avatars.com/api/?name=" + (userInfo.username || "User");
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      {/* Profile Pic + Edit Button */}
-      <div className="flex items-center gap-6 mb-8">
+    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-2xl rounded-xl">
+      <div className="flex items-center gap-6 mb-10">
         <img
           src={profileImage}
           alt="Profile"
-          className="w-20 h-20 rounded-full object-cover border"
+          className="w-24 h-24 rounded-full object-cover border-4 border-blue-200 shadow-lg"
         />
         <div>
-          <h2 className="font-semibold text-lg">{userInfo.username}</h2>
-          <label className="text-sm font-medium text-blue-500 cursor-pointer">
+          <h2 className="text-2xl font-bold text-gray-800">{userInfo.username}</h2>
+          <label className="text-sm text-blue-600 cursor-pointer mt-2 inline-block font-medium hover:underline">
             Change Profile Photo
-            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
           </label>
         </div>
       </div>
 
       {/* Form Fields */}
       <div className="space-y-6">
-        {/* Name */}
-        <div className="flex items-start gap-4">
-          <label className="w-24 text-right pt-2 text-sm text-gray-700">Name</label>
-          <div className="flex-1">
-            {editingField === "name" ? (
-              <input
-                type="text"
-                name="name"
-                value={editedData.name}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded focus:ring focus:outline-none"
-              />
-            ) : (
-              <p className="text-sm">{userInfo.name}</p>
-            )}
+        {/* Field Component */}
+        {[
+          { label: "Name", field: "name" },
+          { label: "Username", field: "username" },
+          { label: "Email", field: "email" },
+          { label: "Bio", field: "bios", isTextarea: true }
+        ].map(({ label, field, isTextarea }) => (
+          <div key={field} className="flex items-start gap-4">
+            <label className="w-28 text-right pt-2 text-gray-700 font-semibold">{label}</label>
+            <div className="flex-1">
+              {editingField === field ? (
+                isTextarea ? (
+                  <textarea
+                    name={field}
+                    value={editedData[field]}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    name={field}
+                    value={editedData[field]}
+                    onChange={handleChange}
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  />
+                )
+              ) : (
+                <p className="text-gray-800">{userInfo[field] || "Not set"}</p>
+              )}
+            </div>
+            <MdEdit
+              onClick={() => handleEdit(field)}
+              className="text-gray-500 hover:text-blue-600 cursor-pointer mt-2 text-lg"
+              title={`Edit ${label}`}
+            />
           </div>
-          <MdEdit onClick={() => handleEdit("name")} className="text-gray-500 cursor-pointer mt-2" />
-        </div>
+        ))}
 
-        {/* Username */}
-        <div className="flex items-start gap-4">
-          <label className="w-24 text-right pt-2 text-sm text-gray-700">Username</label>
-          <div className="flex-1">
-            {editingField === "username" ? (
-              <input
-                type="text"
-                name="username"
-                value={editedData.username}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded focus:ring focus:outline-none"
-              />
-            ) : (
-              <p className="text-sm">{userInfo.username}</p>
-            )}
-          </div>
-          <MdEdit onClick={() => handleEdit("username")} className="text-gray-500 cursor-pointer mt-2" />
-        </div>
-
-        {/* Email */}
-        <div className="flex items-start gap-4">
-          <label className="w-24 text-right pt-2 text-sm text-gray-700">Email</label>
-          <div className="flex-1">
-            {editingField === "email" ? (
-              <input
-                type="email"
-                name="email"
-                value={editedData.email}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded focus:ring focus:outline-none"
-              />
-            ) : (
-              <p className="text-sm">{userInfo.email}</p>
-            )}
-          </div>
-          <MdEdit onClick={() => handleEdit("email")} className="text-gray-500 cursor-pointer mt-2" />
-        </div>
-
-        {/* Bios */}
-<div className="flex items-start gap-4">
-  <label className="w-24 text-right pt-2 text-sm text-gray-700">Bio</label>
-  <div className="flex-1">
-    {editingField === "bios" ? (
-      <textarea
-        name="bios"
-        value={editedData.bios}
-        onChange={handleChange}
-        rows={3}
-        className="w-full border px-3 py-2 rounded focus:ring focus:outline-none resize-none"
-      />
-    ) : (
-      <p className="text-sm whitespace-pre-wrap">{userInfo.bios || "No bio added."}</p>
-    )}
-  </div>
-  <MdEdit onClick={() => handleEdit("bios")} className="text-gray-500 cursor-pointer mt-2" />
-</div>
-
-
-        {/* Save Button */}
+        {/* Save Changes Button */}
         {(editingField || selectedFile) && (
-          <div className="pl-24">
+          <div className="text-right mt-6">
             <button
               onClick={handleUpdate}
-              className="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-md shadow-md"
             >
               Save Changes
             </button>
           </div>
         )}
       </div>
+
+      <ToastContainer />
     </div>
   );
 };

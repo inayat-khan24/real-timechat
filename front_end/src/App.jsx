@@ -56,13 +56,20 @@ function App() {
  
   return (
     <Router>
-      <Header
+      {user&&    <Header
       setUser={setUser}
+      user = {user }
       name = {name}
       profilePic={profilePic} userDetails={userDetails}/>
+      }
+    
       <Routes>
 
-          <Route path="/" element={<Feeds/>} />
+          <Route path="/" 
+          
+           element={user ? <Feeds/> : <Navigate to="/login" />}
+          
+          />
         <Route path="/login" element={<Login setUser={setUser} userDetails={userDetails} />} />
         // forgotPassword
          <Route path="/forgot-password" element={<ForgotPassword/>} />
@@ -99,10 +106,17 @@ function App() {
             userDetails={userDetails} username={user} /> : <Navigate to="/login" />}
         />
 // user profile 
-  <Route path="/profile" element={<Profile profilePic={profilePic}
+ 
+           {/* element={user ? <Feeds/> : <Navigate to="/login" />} */}
+  <Route path="/profile"
+   
+      element={user ? 
+        <Profile profilePic={profilePic}
   userDetails={userDetails} 
   userInfo = {userInfo}
-  />} />
+  />
+        : <Navigate to="/login" />}
+    />
 
   // user profile 
   <Route path="/:anotherUserID" element={<UserInfo/>} />

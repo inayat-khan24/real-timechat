@@ -7,7 +7,7 @@ import { IoCameraOutline, IoSearch } from "react-icons/io5";
 import { ImHome } from "react-icons/im";
 import { Link, useNavigate } from 'react-router-dom';
 
-const Header = ({ userDetails, profilePic, setUser }) => {
+const Header = ({ userDetails, profilePic, setUser,user  }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -188,6 +188,7 @@ const userNAme = localStorage.getItem("username")
                 <span className="text-sm text-gray-800 font-semibold">{userNAme}</span>
               </div>
             </Link>
+
 
             <Button onClick={handleClick} className="!text-gray-800 !normal-case">Menu</Button>
 
