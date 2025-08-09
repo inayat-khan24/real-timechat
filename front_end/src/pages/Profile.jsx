@@ -67,7 +67,7 @@ if(posts === undefined) return <div>Loading....</div>
   {posts.map((src, idx) => (
     <div key={idx} className="w-full">
       <img
-        src={`http://localhost:5000/postUploads/${src.PostImage}`}
+        src={`${src.PostImage}`}
         alt={`Post ${idx + 1}`}
         className="w-full aspect-square object-cover hover:opacity-80 cursor-pointer rounded-md"
       />

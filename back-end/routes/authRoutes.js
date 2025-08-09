@@ -9,8 +9,9 @@ import { forgotPassword, getUserDetails,getalluser,
       getUserFollowersFollowing,
       loginFollowersFollowing,
       Feeds} from "../controller/userController.js";
-import { upload } from "../controller/uploadController.js";
+
 import { ensureAuthenticated } from "../middleware/auth.js";
+import { upload } from "../CloudinaryStorage/uploadController.js";
 
 // import { getUserFollowersWithStatus } from "../controller/anotheruser.js";
 

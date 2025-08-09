@@ -58,7 +58,7 @@ const id = localStorage.getItem("userId")
 
             {post.PostImage && (
               <img
-                  src={`http://localhost:5000/postUploads/${post.PostImage}`}
+                  src={`${post.PostImage}`}
                   alt={`Post`}
                   className="w-full  aspect-square object-cover group-hover:opacity-90 transition"
                 />

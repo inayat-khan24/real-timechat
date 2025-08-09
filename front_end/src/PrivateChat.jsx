@@ -230,7 +230,7 @@ const themeClasses = {
                     <div className="text-sm font-semibold">{msg.sender}</div>
                     {msg.image && (
                       <img
-                        src={`http://localhost:5000/uploads/${msg.image}`}
+                        src={`${msg.image}`}
                         alt="chat"
                         className="mt-1 max-w-[200px] rounded-md"
                       />

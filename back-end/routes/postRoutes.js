@@ -1,6 +1,7 @@
 import express from 'express';
 import { addPostToUser } from '../controller/postController.js';
-import { Postupload } from '../controller/PostMulter.js';
+import { Postupload } from '../CloudinaryStorage/PostMulter.js';
+
 
 const router = express.Router();
 

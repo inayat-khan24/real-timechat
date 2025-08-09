@@ -1,7 +1,8 @@
 import express from "express";
 import { PrivateMessage } from "../models/PrivateMessage.js";
 import { User } from "../models/User.js";
-import { upload } from "../controller/uploadController.js";
+
+import { privateChatPic } from "../CloudinaryStorage/privateChatupload.js";
 
 const router = express.Router();
 
@@ -20,37 +21,34 @@ const router = express.Router();
 //   } catch (err) {
 //     res.status(500).json({ error: err.message });
 //   }
-// });
-
-router.post("/send", upload.single("image"), async (req, res) => {
+router.post("/send", privateChatPic.single("image"), async (req, res) => {
   try {
     // Debug logs
     console.log("BODY:", req.body);
     console.log("FILE:", req.file);
 
     const { sender, receiver, message, time } = req.body;
-    const image = req.file?.filename || null;
 
-    // Validate required fields
-    // if (!sender || !receiver || !time) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     error: "sender, receiver, and time are required fields",
-    //   });
-    // }
+    // ✅ Cloudinary ka direct URL
+    const image = req.file?.path || null;
 
     // Save message
     const newMsg = new PrivateMessage({
       sender,
       receiver,
       message: message || "", // optional field
-      image,
+      image, // yeh ab Cloudinary ka secure_url hoga
       time,
     });
 
     await newMsg.save();
 
-    res.status(200).json({ success: true, message: "Message sent" });
+    res.status(200).json({
+      success: true,
+      message: "Message sent successfully",
+      data: newMsg
+    });
+
   } catch (err) {
     console.error("Error saving message:", err);
     res.status(500).json({
@@ -59,6 +57,7 @@ router.post("/send", upload.single("image"), async (req, res) => {
     });
   }
 });
+
 
 
 // ✅ Get chat between two users + receiver profile image

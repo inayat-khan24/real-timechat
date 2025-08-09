@@ -1,27 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Menu, MenuItem } from '@mui/material';
+import { Button, Menu, MenuItem, CircularProgress } from '@mui/material';
 import { IoIosLogOut } from 'react-icons/io';
 import { MdAccountCircle } from 'react-icons/md';
 import { AiOutlineMessage } from 'react-icons/ai';
 import { IoCameraOutline, IoSearch } from "react-icons/io5";
 import { ImHome } from "react-icons/im";
 import { Link, useNavigate } from 'react-router-dom';
+import { handleError, handleSuccess } from './notifiction';
 
-const Header = ({ userDetails, profilePic, setUser,user  }) => {
+const Header = ({ userDetails, profilePic, setUser, user }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [userSearch, setUserSearch] = useState([]);
+  const [loadingSearch, setLoadingSearch] = useState(false); // 🔹 search loader state
 
   const [postModalOpen, setPostModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [caption, setCaption] = useState("");
-  const [imageSize, setImageSize] = useState("full");
+  const [uploadingPost, setUploadingPost] = useState(false); // 🔹 post upload loader
 
   const open = Boolean(anchorEl);
   const searchRef = useRef(null);
-const userNAme = localStorage.getItem("username")
+  const userNAme = localStorage.getItem("username");
 
   const profile = profilePic
     ? `${profilePic}`
@@ -29,17 +31,19 @@ const userNAme = localStorage.getItem("username")
 
   const fetchSearch = async () => {
     try {
+      setLoadingSearch(true); // loader start
       const res = await fetch("http://localhost:5000/api/auth/search");
       const result = await res.json();
-      
       setUserSearch(result.users || []);
     } catch (error) {
       console.error("Search fetch failed", error);
+    } finally {
+      setLoadingSearch(false); // loader end
     }
   };
 
-  const filteredUsers = userSearch.filter((user) =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = userSearch.filter((u) =>
+    u.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   useEffect(() => {
@@ -77,23 +81,25 @@ const userNAme = localStorage.getItem("username")
 
     const formData = new FormData();
     formData.append("PostImage", selectedImage);
-    formData.append("userId", localStorage.getItem("userId")); // or from props
+    formData.append("userId", localStorage.getItem("userId"));
     formData.append("caption", caption);
 
     try {
+      setUploadingPost(true); // loader start
       const res = await fetch("http://localhost:5000/api/posts/create", {
         method: "POST",
         body: formData,
       });
       const data = await res.json();
-      console.log("Post response:", data);
-      alert("Post uploaded successfully");
+      handleSuccess("Post uploaded successfully");
       setSelectedImage(null);
       setCaption("");
       setPostModalOpen(false);
     } catch (err) {
       console.error("Post error", err);
-      alert("Failed to upload post");
+      handleError("Failed to upload post");
+    } finally {
+      setUploadingPost(false); // loader end
     }
   };
 
@@ -103,17 +109,16 @@ const userNAme = localStorage.getItem("username")
         <div className="flex items-center justify-between px-6 py-3">
           {/* Left */}
           <div className="flex items-center gap-4">
- <Link to="/" className="flex items-center gap-2 text-gray-700 hover:text-black text-[1rem]">
+            <Link to="/" className="flex items-center gap-2 text-gray-700 hover:text-black text-[1rem]">
               <ImHome className="text-xl" />
-              
             </Link>
-
 
             <Link to="/private" className="flex items-center gap-2 text-gray-700 hover:text-black text-[1rem]">
               <AiOutlineMessage className="text-xl" />
               <span>Messages</span>
             </Link>
 
+            {/* user post image */}
             <label htmlFor="fileInput" className="cursor-pointer text-gray-600 hover:text-black">
               <IoCameraOutline className="text-2xl" />
               <input
@@ -146,18 +151,22 @@ const userNAme = localStorage.getItem("username")
                   />
 
                   <div className="max-h-60 overflow-y-auto space-y-2">
-                    {searchTerm.trim() ? (
+                    {loadingSearch ? (
+                      <div className="flex justify-center py-4">
+                        <CircularProgress size={20} />
+                      </div>
+                    ) : searchTerm.trim() ? (
                       filteredUsers.length > 0 ? (
-                        filteredUsers.map((user, i) => (
-                          <Link to={`/${user.username}`} key={i}
+                        filteredUsers.map((u, i) => (
+                          <Link to={`/${u.username}`} key={i}
                             className="flex items-center gap-3 px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded-md cursor-pointer text-sm text-gray-800 transition-all duration-150 shadow-sm"
                           >
                             <img
-                              src={`${user.profilePic}`}
-                              alt={user.username}
+                              src={`${u.profilePic}`}
+                              alt={u.username}
                               className="w-7 h-7 object-cover rounded-full border"
                             />
-                            <span className="font-medium">{user.username}</span>
+                            <span className="font-medium">{u.username}</span>
                           </Link>
                         ))
                       ) : (
@@ -189,7 +198,6 @@ const userNAme = localStorage.getItem("username")
               </div>
             </Link>
 
-
             <Button onClick={handleClick} className="!text-gray-800 !normal-case">Menu</Button>
 
             <Menu
@@ -217,16 +225,14 @@ const userNAme = localStorage.getItem("username")
             <h2 className="text-lg font-semibold text-gray-700">Create Post</h2>
 
             {selectedImage && (
-           <div className='w-[100px] h-[100px] mb-15'>
-              <img
-                src={URL.createObjectURL(selectedImage)}
-                alt="preview"
-                className={`w-full object-cover rounded-lg `}
-              />
-           </div>
+              <div className='w-[100px] h-[100px] mb-15'>
+                <img
+                  src={URL.createObjectURL(selectedImage)}
+                  alt="preview"
+                  className="w-full object-cover rounded-lg"
+                />
+              </div>
             )}
-
-          
 
             <textarea
               rows={3}
@@ -245,8 +251,10 @@ const userNAme = localStorage.getItem("username")
               </button>
               <button
                 onClick={handleSubmitPost}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm flex items-center gap-2"
+                disabled={uploadingPost}
               >
+                {uploadingPost && <CircularProgress size={14} color="inherit" />}
                 Post
               </button>
             </div>

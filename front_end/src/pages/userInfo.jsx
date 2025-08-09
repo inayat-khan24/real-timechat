@@ -137,7 +137,7 @@ console.log("Type of anotherUserID:", typeof anotherUserID);
             {posts.map((src, idx) => (
               <div key={idx} className="group overflow-hidden rounded-lg shadow hover:shadow-md transition">
                 <img
-                  src={`http://localhost:5000/postUploads/${src.PostImage}`}
+                  src={`${src.PostImage}`}
                   alt={`Post ${idx + 1}`}
                   className="w-full aspect-square object-cover group-hover:opacity-90 transition"
                 />
