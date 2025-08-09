@@ -4,7 +4,7 @@ import axios from "axios";
 const Feeds = () => {
   const [feedPosts, setFeedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  console.log(feedPosts)
+  const Base_url = "https://real-timechat-l7bv.onrender.com"
 const id = localStorage.getItem("userId")
   // Fetch feed on mount
   useEffect(() => {
@@ -12,7 +12,7 @@ const id = localStorage.getItem("userId")
       try {
         
 
-       const res = await axios.get(`http://localhost:5000/api/auth/feeds?userId=${id}`);
+       const res = await axios.get(`${Base_url}/api/auth/feeds?userId=${id}`);
 
         setFeedPosts(res.data);
         setLoading(false);

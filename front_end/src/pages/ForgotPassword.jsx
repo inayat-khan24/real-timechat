@@ -10,6 +10,7 @@ const ForgotPassword = () => {
     username: '',
     email: '',
   });
+   const Base_url = "https://real-timechat-l7bv.onrender.com"
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -24,7 +25,7 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/forgot-password', formData);
+      const res = await axios.post(`${Base_url}/api/auth/forgot-password`, formData);
 
       if (res.data.success) {
         handleSuccess(res.data.message || 'OTP sent successfully');

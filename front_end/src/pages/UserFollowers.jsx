@@ -9,11 +9,11 @@ const UserFollowers = () => {
 
   const currentUserId = localStorage.getItem('userId');
   const targetUserId = localStorage.getItem('anotherUser');
-
+ const Base_url = "https://real-timechat-l7bv.onrender.com"
   const userFollowersFetch = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/auth/${currentUserId}/follow-data`
+        `${Base_url}/api/auth/${currentUserId}/follow-data`
       );
       const data = await res.json();
       setFollowers(data.followers || []);
@@ -31,8 +31,8 @@ const UserFollowers = () => {
 
   const handleFollowToggle = async (followerId, isCurrentlyFollowing, targetId) => {
     const endpoint = isCurrentlyFollowing
-      ? 'http://localhost:5000/api/auth/unfollow'
-      : 'http://localhost:5000/api/auth/follow';
+      ? `${Base_url}/api/auth/unfollow`
+      : `${Base_url}/api/auth/follow`;
 
     try {
       const res = await fetch(endpoint, {
@@ -49,7 +49,7 @@ const UserFollowers = () => {
       if (!res.ok) throw new Error('Something went wrong');
 
       const updated = await fetch(
-        `http://localhost:5000/api/auth/${currentUserId}/follow-data`
+        `${Base_url}/api/auth/${currentUserId}/follow-data`
       );
       const updatedData = await updated.json();
       setFollowers(updatedData.followers || []);

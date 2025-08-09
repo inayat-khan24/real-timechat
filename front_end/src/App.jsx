@@ -35,9 +35,10 @@ function App() {
   const [user, setUser] = useState(token);
    const userId = localStorage.getItem("userId");
    const targetUserId = localStorage.getItem('anotherUser');
+   const Base_url = "https://real-timechat-l7bv.onrender.com"
     const userDetails = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/auth/getUserDetails?userId=${userId}`, {
+        const res = await fetch(`${Base_url}/api/auth/getUserDetails?userId=${userId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

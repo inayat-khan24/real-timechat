@@ -9,6 +9,7 @@ const VerifyOtp = () => {
     username: '',
     otp: '',
   });
+  const Base_url = "https://real-timechat-l7bv.onrender.com"
 const navigate = useNavigate();
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,7 +23,7 @@ const navigate = useNavigate();
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/verify-otp', formData);
+      const res = await axios.post(`${Base_url}/api/auth/verify-otp`, formData);
 
       if (res.data.success) {
         toast.success(res.data.message || 'OTP Verified Successfully!');

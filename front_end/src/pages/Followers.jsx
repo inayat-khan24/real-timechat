@@ -7,14 +7,14 @@ const Followers = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUserName] = useState('');
   const { anotherUserID } = useParams();
-
+const Base_url = "https://real-timechat-l7bv.onrender.com"
   const currentUserId = localStorage.getItem('userId');
   const targetUserId = localStorage.getItem('anotherUser');
 
   const userFollowersFetch = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/auth/${targetUserId}/followers?currentUserId=${currentUserId}`
+        `${Base_url}/api/auth/${targetUserId}/followers?currentUserId=${currentUserId}`
       );
       const data = await res.json();
       setFollowers(data.followers || []);
@@ -33,8 +33,8 @@ const Followers = () => {
 
   const handleFollowToggle = async (followerId, isCurrentlyFollowing, targetId) => {
     const endpoint = isCurrentlyFollowing
-      ? 'http://localhost:5000/api/auth/unfollow'
-      : 'http://localhost:5000/api/auth/follow';
+      ? `${Base_url}/api/auth/unfollow`
+      : `${Base_url}/api/auth/follow`;
 
     try {
       const res = await fetch(endpoint, {
@@ -51,7 +51,7 @@ const Followers = () => {
       if (!res.ok) throw new Error('Something went wrong');
 
       const updated = await fetch(
-        `http://localhost:5000/api/auth/${targetUserId}/followers?currentUserId=${currentUserId}`
+        `${Base_url}/api/auth/${targetUserId}/followers?currentUserId=${currentUserId}`
       );
       const updatedData = await updated.json();
       setFollowers(updatedData.followers || []);

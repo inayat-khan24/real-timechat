@@ -10,10 +10,18 @@ const Login = ({ setUser }) => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  const Base_url = "https://real-timechat-l7bv.onrender.com"
+ 
+
   const loginUser = async (e) => {
     e.preventDefault();
+
+    if (!userName || !password) {
+      return handleError("Please fill all fields");
+    }
+
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
+      const res = await axios.post(`${Base_url}/api/auth/login`, {
         username: userName,
         password,
       });
@@ -28,10 +36,14 @@ const Login = ({ setUser }) => {
         handleSuccess("Login successful! 🎉");
         setTimeout(() => navigate("/"), 1000);
       } else {
-        handleError(message);
+        handleError(message || "Invalid credentials");
       }
     } catch (err) {
-      handleError(err.response?.data?.message || "Something went wrong!");
+      handleError(
+        err.response?.data?.message ||
+          err.message ||
+          "Something went wrong!"
+      );
     }
   };
 
@@ -52,7 +64,7 @@ const Login = ({ setUser }) => {
             placeholder="Username or Email"
             value={userName}
             onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username" // 👈 Email/username suggestion
+            autoComplete="username"
           />
 
           <input
@@ -61,7 +73,7 @@ const Login = ({ setUser }) => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password" // 👈 Browser can remember password
+            autoComplete="current-password"
           />
 
           <button

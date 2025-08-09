@@ -8,11 +8,10 @@ import ThemeSelector from "./component/ThemeSelector.jsx";
 import { RiSendPlaneFill } from "react-icons/ri";
 import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
-import { decryptMessage,encryptMessage } from "./cryptoUtil.jsx";
-// import { encryptMessage, decryptMessage } from "./utils/cryptoUtil.js";
+import { decryptMessage, encryptMessage } from "./cryptoUtil.jsx";
 
-const socket = io("http://localhost:5000");
-
+const Base_url = "https://real-timechat-l7bv.onrender.com";
+const socket = io(`${Base_url}`);
 
 const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   const [allUsers, setAllUsers] = useState([]);
@@ -28,19 +27,24 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   const chatEndRef = useRef(null);
   const username = localStorage.getItem("username");
 
-const themeClasses = {
+  const themeClasses = {
     default: "bg-gray-50 text-black",
     dark: "bg-gray-900 text-white",
     gradient: "bg-gradient-to-br from-purple-100 to-blue-100 text-black",
-    BgStock: "bg-[url('https://static.vecteezy.com/system/resources/thumbnails/035/719/133/small_2x/ai-generated-abstract-golden-wave-on-black-background-vector-illustration-for-your-design-abstract-golden-lines-on-black-bg-ai-generated-free-photo.jpg')] bg-cover bg-center bg-no-repeat bg-fixed h-screen w-full",
+    BgStock:
+      "bg-[url('https://static.vecteezy.com/system/resources/thumbnails/035/719/133/small_2x/ai-generated-abstract-golden-wave-on-black-background-vector-illustration-for-your-design-abstract-golden-lines-on-black-bg-ai-generated-free-photo.jpg')] bg-cover bg-center bg-no-repeat bg-fixed h-screen w-full",
     love: "bg-[url('https://www.shutterstock.com/image-photo/valentines-day-love-theme-background-260nw-573985108.jpg')] bg-no-repeat bg-cover",
     emoji: "bg-[url('https://i.pinimg.com/236x/2c/89/b6/2c89b6c8c03f0d953fcf01ce0f15672a.jpg')]",
   };
 
   const fetchUsers = async () => {
-    const res = await fetch("http://localhost:5000/api/auth/getalluser");
-    const result = await res.json();
-    setAllUsers(result.user);
+    try {
+      const res = await fetch(`${Base_url}/api/auth/getalluser`);
+      const result = await res.json();
+      setAllUsers(result.user);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    }
   };
 
   const privateChatuser = async () => {
@@ -50,7 +54,7 @@ const themeClasses = {
 
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/private/chat/${username}/${selectedUser}`
+        `${Base_url}/api/private/chat/${username}/${selectedUser}`
       );
 
       const decryptedMsgs = res.data.messages.map((msg) => ({
@@ -64,7 +68,8 @@ const themeClasses = {
   };
 
   const sendPrivateMessage = async () => {
-    if (!selectedUser || (!message.trim() && !selectedFile && !selectedVideo)) return;
+    if (!selectedUser) return;
+    if (!message.trim() && !selectedFile && !selectedVideo) return;
 
     const roomId = [username, selectedUser].sort().join("_");
 
@@ -80,7 +85,7 @@ const themeClasses = {
     const msgToEmit = {
       sender: username,
       receiver: selectedUser,
-      message: message || "",
+      message: message.trim() ? message : null,
       image: selectedFile ? URL.createObjectURL(selectedFile) : null,
       video: selectedVideo ? URL.createObjectURL(selectedVideo) : null,
       time: new Date().toLocaleTimeString(),
@@ -96,10 +101,9 @@ const themeClasses = {
     setShowEmojiPicker(false);
 
     try {
-      await axios.post("http://localhost:5000/api/private/send", formData, {
+      await axios.post(`${Base_url}/api/private/send`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
       privateChatuser();
     } catch (err) {
       console.error("Failed to send", err.response?.data || err.message);
@@ -152,175 +156,228 @@ const themeClasses = {
   }, [privateChat]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 flex justify-center">
-      <div className="w-full max-w-6xl h-[80vh] bg-white rounded-xl shadow-xl flex flex-col lg:flex-row overflow-hidden">
-        <div className="w-full p-2 bg-white flex justify-end border-b lg:hidden">
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            className="px-3 py-1 rounded-md border text-sm focus:outline-none"
-          >
-            <option value="default">Default</option>
-            <option value="dark">Dark</option>
-            <option value="gradient">Gradient</option>
-            <option value="BgStock">BgStock</option>
-            <option value="love">Love</option>
-            <option value="emoji">Emoji</option>
-          </select>
-        </div>
-
-        <div className="w-full lg:w-1/3 border-r overflow-y-auto p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Users</h2>
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 flex justify-center items-center">
+      <div className="w-full max-w-7xl h-[90vh] md:h-[80vh] bg-white rounded-2xl shadow-xl flex flex-col lg:flex-row overflow-hidden">
+        {/* User List & Theme Selector (Left Pane) */}
+        <div
+          className={`w-full lg:w-1/3 border-r overflow-y-auto p-4 transition-all duration-300 ${
+            selectedUser ? "hidden lg:block" : "block"
+          }`}
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-gray-800">Chats</h2>
             <ThemeSelector theme={theme} setTheme={setTheme} />
           </div>
 
-          {allUsers
-            .filter((u) => u.username !== username)
-            .map((user, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setSelectedUser(user.username);
-                  setSelectedUserVideo(user.username);
-                }}
-                className={`flex items-center gap-3 p-2 rounded-lg w-full text-left ${
-                  selectedUser === user.username
-                    ? "bg-blue-200"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <img
-                  src={
-                    user.profilePic
-                      ? `${user.profilePic}`
-                      : "https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3"
-                  }
-                  className="h-8 w-8 rounded-full"
-                  alt="pf"
-                />
-                <span>{user.username}</span>
-              </button>
-            ))}
+          {/* User list */}
+          <div className="space-y-3">
+            {allUsers
+              .filter((u) => u.username !== username)
+              .map((user, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setSelectedUser(user.username);
+                    setSelectedUserVideo(user.username);
+                  }}
+                  className={`flex items-center gap-4 p-3 rounded-xl w-full text-left transition-colors duration-200 ${
+                    selectedUser === user.username
+                      ? "bg-blue-100 text-blue-800 shadow-md"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  <img
+                    src={
+                      user.profilePic
+                        ? `${user.profilePic}`
+                        : "https://images.unsplash.com/photo-1633332755192-727a05c4013d"
+                    }
+                    className="h-10 w-10 rounded-full object-cover border-2 border-gray-200"
+                    alt="profile"
+                  />
+                  <span className="text-lg font-medium">{user.username}</span>
+                </button>
+              ))}
+          </div>
         </div>
 
-        <div className="w-full lg:w-2/3 flex flex-col">
-          <div className="p-4 border-b bg-blue-50 flex justify-between items-center">
-            <span className="font-medium">Chat with {selectedUser}</span>
-            <Link to="/video-call">
-              <TbPhoneCalling className="text-2xl" />
-            </Link>
-          </div>
-
-          <div
-            className={`flex-1 p-4 overflow-y-auto space-y-4 transition-all duration-300 ${themeClasses[theme]}`}
+        {/* Chat window (Right Pane) */}
+        <div
+  className={`w-full lg:w-2/3 flex flex-col h-full ${
+    !selectedUser ? "hidden" : "flex"
+  }`}
 >
-            {privateChat.map((msg, idx) => {
-              const isMe = msg.sender === username;
-              return (
-                <div
-                  key={idx}
-                  className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-xs p-3 rounded-md shadow ${
-                      isMe ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
-                    }`}
-                  >
-                    <div className="text-sm font-semibold">{msg.sender}</div>
-                    {msg.image && (
-                      <img
-                        src={`${msg.image}`}
-                        alt="chat"
-                        className="mt-1 max-w-[200px] rounded-md"
-                      />
-                    )}
-                    {msg.video && (
-                      <video
-                        src={`http://localhost:5000/uploads/${msg.video}`}
-                        controls
-                        className="mt-1 max-w-[200px] rounded-md"
-                      />
-                    )}
-                    {msg.message && <div>{msg.message}</div>}
-                    <div className="text-[10px] text-right mt-1 opacity-70">
-                      {msg.time}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-            <div ref={chatEndRef} />
-          </div>
-
-          {selectedUser && (
-            <div className="p-4 border-t bg-white flex items-center gap-2 relative">
-              <label>
-                <GrGallery className="text-2xl text-gray-600 cursor-pointer" />
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-              </label>
-
-              <div className="relative">
-                <BsEmojiSmile
-                  className="text-2xl text-gray-600 cursor-pointer"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                />
-                {showEmojiPicker && (
-                  <div className="absolute bottom-12 left-0 z-50">
-                    <EmojiPicker onEmojiClick={handleEmojiClick} />
-                  </div>
-                )}
-              </div>
-
-              <input
-                type="text"
-                placeholder="Type message..."
-                className="flex-1 border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendPrivateMessage()}
+  {selectedUser ? (
+    <>
+      {/* Chat Header */}
+      <div className="p-4 border-b bg-blue-50 flex justify-between items-center shadow-sm">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSelectedUser(null)}
+            className="lg:hidden p-1 rounded-full hover:bg-gray-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
+            </svg>
+          </button>
+          <span className="text-xl font-semibold">
+            Chat with {selectedUser}
+          </span>
+        </div>
+        <Link to="/video-call">
+          <TbPhoneCalling className="text-3xl text-blue-500 hover:text-blue-700 transition-colors" />
+        </Link>
+      </div>
 
-              <button
-                onClick={sendPrivateMessage}
-                className="bg-blue-500 rounded-[200px] text-white px-4 py-2"
+      {/* Chat Messages Area - **SCROLLABLE CONTAINER** */}
+      <div
+        className={`flex-1 p-4 overflow-y-auto space-y-4 transition-all duration-300 ${themeClasses[theme]}`}
+      >
+        {privateChat.map((msg, idx) => {
+          const isMe = msg.sender === username;
+          return (
+            <div
+              key={idx}
+              className={`flex ${
+                isMe ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-[70%] p-3 rounded-xl shadow-md break-words ${
+                  isMe
+                    ? "bg-blue-500 text-white rounded-br-none"
+                    : "bg-gray-200 text-black rounded-bl-none"
+                }`}
               >
-                <RiSendPlaneFill className="text-2xl" />
-              </button>
-
-              {previewImage && (
-                <div className="absolute bottom-16 left-4">
+                <div className="text-sm font-semibold mb-1">
+                  {msg.sender}
+                </div>
+                {msg.image && (
                   <img
-                    src={previewImage}
-                    alt="preview"
-                    className="h-20 w-20 object-cover rounded border"
+                    src={`${msg.image}`}
+                    alt="chat"
+                    className="mt-1 w-full max-h-60 object-contain rounded-lg cursor-pointer"
                   />
-                </div>
-              )}
-
-              {previewVideo && (
-                <div className="absolute bottom-16 left-4">
+                )}
+                {msg.video && (
                   <video
-                    src={previewVideo}
+                    src={`${msg.video}`}
                     controls
-                    className="h-20 w-20 object-cover rounded border"
+                    className="mt-1 w-full max-h-60 rounded-lg"
                   />
+                )}
+                {msg.message && (
+                  <div className="text-base">{msg.message}</div>
+                )}
+                <div className="text-xs text-right mt-2 opacity-80">
+                  {msg.time}
                 </div>
-              )}
+              </div>
+            </div>
+          );
+        })}
+        <div ref={chatEndRef} />
+      </div>
+
+      {/* Message Input Area */}
+      <div className="p-4 border-t bg-white flex items-end gap-3 relative">
+        {previewImage && (
+          <div className="absolute -top-24 left-4 p-2 bg-white rounded-lg shadow-lg">
+            <img
+              src={previewImage}
+              alt="preview"
+              className="h-20 w-20 object-cover rounded-md border"
+            />
+            <button
+              onClick={() => {
+                setSelectedFile(null);
+                setPreviewImage(null);
+              }}
+              className="absolute top-0 right-0 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs"
+            >
+              X
+            </button>
+          </div>
+        )}
+
+        {previewVideo && (
+          <div className="absolute -top-24 left-4 p-2 bg-white rounded-lg shadow-lg">
+            <video
+              src={previewVideo}
+              controls
+              className="h-20 w-20 object-cover rounded-md border"
+            />
+            <button
+              onClick={() => {
+                setSelectedVideo(null);
+                setPreviewVideo(null);
+              }}
+              className="absolute top-0 right-0 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs"
+            >
+              X
+            </button>
+          </div>
+        )}
+        <label className="cursor-pointer">
+          <GrGallery className="text-3xl text-gray-600 hover:text-blue-500 transition-colors" />
+          <input
+            type="file"
+            accept="image/*,video/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </label>
+
+        <div className="relative">
+          <BsEmojiSmile
+            className="text-3xl text-gray-600 cursor-pointer hover:text-yellow-500 transition-colors"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          />
+          {showEmojiPicker && (
+            <div className="absolute bottom-12 left-0 z-50">
+              <EmojiPicker onEmojiClick={handleEmojiClick} />
             </div>
           )}
         </div>
+
+        <textarea
+          type="text"
+          placeholder="Type a message..."
+          className="flex-1 resize-none border rounded-full px-5 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 max-h-[100px] overflow-y-auto"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendPrivateMessage()}
+          rows={1}
+        />
+
+        <button
+          onClick={sendPrivateMessage}
+          className="bg-blue-500 rounded-full text-white w-12 h-12 flex items-center justify-center hover:bg-blue-600 transition-colors"
+        >
+          <RiSendPlaneFill className="text-2xl" />
+        </button>
+      </div>
+    </>
+  ) : (
+    <div className="flex items-center justify-center h-full text-gray-500 text-xl font-medium">
+      Select a user to start chatting
+    </div>
+  )}
+</div>
       </div>
     </div>
   );
 };
 
 export default PrivateChat;
-
-
-

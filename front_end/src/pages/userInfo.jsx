@@ -7,13 +7,13 @@ const UserInfo = () => {
   const [followed, setFollowed] = useState(false);
   const { anotherUserID } = useParams();
   const currentUserId = localStorage.getItem("userId");
-
+const Base_url = "https://real-timechat-l7bv.onrender.com"
 
   // Fetch other user's profile
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/auth/getOtherUserDetails/${anotherUserID}`);
+        const res = await fetch(`${Base_url}/api/auth/getOtherUserDetails/${anotherUserID}`);
         const data = await res.json();
 
         const userData = data[0] || {};
@@ -49,8 +49,8 @@ console.log("Type of anotherUserID:", typeof anotherUserID);
 
   const handleFollowToggle = async () => {
     const endpoint = followed
-      ? "http://localhost:5000/api/auth/unfollow"
-      : "http://localhost:5000/api/auth/follow";
+      ? `${Base_url}/api/auth/unfollow`
+      : `${Base_url}/api/auth/follow`;
 
     try {
       const res = await fetch(endpoint, {
@@ -74,7 +74,7 @@ console.log("Type of anotherUserID:", typeof anotherUserID);
       if (res.ok) {
         setFollowed(!followed);
         // Refresh user info
-        const updated = await fetch(`http://localhost:5000/api/auth/getOtherUserDetails/${anotherUserID}`);
+        const updated = await fetch(`${Base_url}/api/auth/getOtherUserDetails/${anotherUserID}`);
         const updatedData = await updated.json();
         setOtherUserinfo(updatedData[0] || {});
       } else {

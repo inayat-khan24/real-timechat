@@ -12,7 +12,7 @@ const Register = () => {
     email: "",
     password: "",
   });
-
+ const Base_url = "https://real-timechat-l7bv.onrender.com"
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -25,7 +25,7 @@ const Register = () => {
   const registerUser = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/auth/register", formData);
+      await axios.post(`${Base_url}/api/auth/register`, formData);
       handleSuccess("Registered! Please login.");
       setTimeout(() => navigate("/login"), 1000);
     } catch (err) {

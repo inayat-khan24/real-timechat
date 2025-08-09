@@ -11,7 +11,7 @@ const Account = ({ userDetails, userInfo, editedData, setEditedData }) => {
 
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
-
+const Base_url = "https://real-timechat-l7bv.onrender.com"
   useEffect(() => {
     userDetails(); // fetch user info on mount
   }, []);
@@ -38,7 +38,7 @@ const Account = ({ userDetails, userInfo, editedData, setEditedData }) => {
       }
 
       await axios.put(
-        `http://localhost:5000/api/auth/updateprofile/${userId}`,
+        `${Base_url}/api/auth/updateprofile/${userId}`,
         formData,
         {
           headers: {

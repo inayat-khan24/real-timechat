@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 import axios from "axios";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://real-timechat-l7bv.onrender.com");
 
 const Chat = () => {
   const [message, setMessage] = useState("");
@@ -10,7 +10,7 @@ const Chat = () => {
 const username  = localStorage.getItem("username")
   // ✅ Load old messages on first load
   useEffect(() => {
-    axios.get("http://localhost:5000/api/chat/all")
+    axios.get("https://real-timechat-l7bv.onrender.com/api/chat/all")
       .then((res) => setChat(res.data))
       .catch((err) => console.error("Error loading messages", err));
   }, []);
@@ -37,7 +37,7 @@ const username  = localStorage.getItem("username")
       setMessage("");
 
       try {
-        await axios.post("http://localhost:5000/api/chat/send", data); // save to MongoDB
+        await axios.post("https://real-timechat-l7bv.onrender.com/api/chat/send", data); // save to MongoDB
       } catch (err) {
         console.error("Failed to save message", err);
       }
