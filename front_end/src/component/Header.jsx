@@ -24,7 +24,7 @@ const Header = ({ userDetails, profilePic, setUser,user  }) => {
 const userNAme = localStorage.getItem("username")
 
   const profile = profilePic
-    ? `http://localhost:5000/uploads/${profilePic}`
+    ? `${profilePic}`
     : 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3';
 
   const fetchSearch = async () => {
@@ -153,7 +153,7 @@ const userNAme = localStorage.getItem("username")
                             className="flex items-center gap-3 px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded-md cursor-pointer text-sm text-gray-800 transition-all duration-150 shadow-sm"
                           >
                             <img
-                              src={`http://localhost:5000/uploads/${user.profilePic}`}
+                              src={`${user.profilePic}`}
                               alt={user.username}
                               className="w-7 h-7 object-cover rounded-full border"
                             />

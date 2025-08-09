@@ -43,7 +43,7 @@ const id = localStorage.getItem("userId")
           >
             <div className="flex items-center mb-3">
               <img
-                src={`http://localhost:5000/uploads/${post.userId.profilePic}`}
+                src={`${post.userId.profilePic}`}
                 alt="profile"
                 className="w-10 h-10 rounded-full object-cover mr-3"
               />

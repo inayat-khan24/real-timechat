@@ -110,7 +110,7 @@ const Following = () => {
                   <img
                     src={
                       follower.profilePic
-                        ? `http://localhost:5000/uploads/${follower.profilePic}`
+                        ? `${follower.profilePic}`
                         : `https://ui-avatars.com/api/?name=${follower.username}`
                     }
                     alt="profile"

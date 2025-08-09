@@ -69,7 +69,7 @@ const Account = ({ userDetails, userInfo, editedData, setEditedData }) => {
   const profileImage = previewImage
     ? previewImage
     : userInfo?.profilePic
-    ? `http://localhost:5000/uploads/${userInfo.profilePic}`
+    ? `${userInfo.profilePic}`
     : "https://ui-avatars.com/api/?name=" + (userInfo.username || "User");
 
   return (

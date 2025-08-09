@@ -118,7 +118,7 @@ const UserFollowers = () => {
                   <img
                     src={
                       profilePic
-                        ? `http://localhost:5000/uploads/${profilePic}`
+                        ? `${profilePic}`
                         : `https://ui-avatars.com/api/?name=${username}`
                     }
                     alt="profile"

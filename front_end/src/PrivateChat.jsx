@@ -8,8 +8,11 @@ import ThemeSelector from "./component/ThemeSelector.jsx";
 import { RiSendPlaneFill } from "react-icons/ri";
 import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
+import { decryptMessage,encryptMessage } from "./cryptoUtil.jsx";
+// import { encryptMessage, decryptMessage } from "./utils/cryptoUtil.js";
 
 const socket = io("http://localhost:5000");
+
 
 const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   const [allUsers, setAllUsers] = useState([]);
@@ -25,16 +28,13 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   const chatEndRef = useRef(null);
   const username = localStorage.getItem("username");
 
-  const themeClasses = {
+const themeClasses = {
     default: "bg-gray-50 text-black",
     dark: "bg-gray-900 text-white",
     gradient: "bg-gradient-to-br from-purple-100 to-blue-100 text-black",
-    BgStock:
-      "bg-[url('https://static.vecteezy.com/system/resources/thumbnails/035/719/133/small_2x/ai-generated-abstract-golden-wave-on-black-background-vector-illustration-for-your-design-abstract-golden-lines-on-black-bg-ai-generated-free-photo.jpg')] bg-cover bg-center bg-no-repeat bg-fixed h-screen w-full",
-    love:
-      "bg-[url('https://www.shutterstock.com/image-photo/valentines-day-love-theme-background-260nw-573985108.jpg')] bg-no-repeat bg-cover",
-    emoji:
-      "bg-[url('https://i.pinimg.com/236x/2c/89/b6/2c89b6c8c03f0d953fcf01ce0f15672a.jpg')] ",
+    BgStock: "bg-[url('https://static.vecteezy.com/system/resources/thumbnails/035/719/133/small_2x/ai-generated-abstract-golden-wave-on-black-background-vector-illustration-for-your-design-abstract-golden-lines-on-black-bg-ai-generated-free-photo.jpg')] bg-cover bg-center bg-no-repeat bg-fixed h-screen w-full",
+    love: "bg-[url('https://www.shutterstock.com/image-photo/valentines-day-love-theme-background-260nw-573985108.jpg')] bg-no-repeat bg-cover",
+    emoji: "bg-[url('https://i.pinimg.com/236x/2c/89/b6/2c89b6c8c03f0d953fcf01ce0f15672a.jpg')]",
   };
 
   const fetchUsers = async () => {
@@ -52,7 +52,12 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
       const res = await axios.get(
         `http://localhost:5000/api/private/chat/${username}/${selectedUser}`
       );
-      setPrivateChat(res.data.messages);
+
+      const decryptedMsgs = res.data.messages.map((msg) => ({
+        ...msg,
+        message: msg.message ? decryptMessage(msg.message) : "",
+      }));
+      setPrivateChat(decryptedMsgs);
     } catch (err) {
       console.error(err);
     }
@@ -70,7 +75,7 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
 
     if (selectedFile) formData.append("image", selectedFile);
     if (selectedVideo) formData.append("video", selectedVideo);
-    if (message.trim()) formData.append("message", message);
+    if (message.trim()) formData.append("message", encryptMessage(message));
 
     const msgToEmit = {
       sender: username,
@@ -133,7 +138,11 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
 
   useEffect(() => {
     socket.on("receivePrivateMessage", (msg) => {
-      setPrivateChat((prev) => [...prev, msg]);
+      const decrypted = {
+        ...msg,
+        message: msg.message ? decryptMessage(msg.message) : "",
+      };
+      setPrivateChat((prev) => [...prev, decrypted]);
     });
     return () => socket.off("receivePrivateMessage");
   }, []);
@@ -145,7 +154,6 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   return (
     <div className="min-h-screen bg-gray-100 p-6 flex justify-center">
       <div className="w-full max-w-6xl h-[80vh] bg-white rounded-xl shadow-xl flex flex-col lg:flex-row overflow-hidden">
-        {/* Theme Selector - mobile */}
         <div className="w-full p-2 bg-white flex justify-end border-b lg:hidden">
           <select
             value={theme}
@@ -161,7 +169,6 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
           </select>
         </div>
 
-        {/* Sidebar */}
         <div className="w-full lg:w-1/3 border-r overflow-y-auto p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Users</h2>
@@ -184,21 +191,20 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 }`}
               >
                 <img
-  src={user.profilePic ? `http://localhost:5000/uploads/${user.profilePic}`
-   : 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3'}
-  className="h-8 w-8 rounded-full"
-  alt="pf"
-/>
-
-                
+                  src={
+                    user.profilePic
+                      ? `${user.profilePic}`
+                      : "https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3"
+                  }
+                  className="h-8 w-8 rounded-full"
+                  alt="pf"
+                />
                 <span>{user.username}</span>
               </button>
             ))}
         </div>
 
-        {/* Chat Window */}
         <div className="w-full lg:w-2/3 flex flex-col">
-          {/* Header */}
           <div className="p-4 border-b bg-blue-50 flex justify-between items-center">
             <span className="font-medium">Chat with {selectedUser}</span>
             <Link to="/video-call">
@@ -206,10 +212,9 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
             </Link>
           </div>
 
-          {/* Messages */}
           <div
             className={`flex-1 p-4 overflow-y-auto space-y-4 transition-all duration-300 ${themeClasses[theme]}`}
-          >
+>
             {privateChat.map((msg, idx) => {
               const isMe = msg.sender === username;
               return (
@@ -248,10 +253,8 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input */}
           {selectedUser && (
             <div className="p-4 border-t bg-white flex items-center gap-2 relative">
-              {/* File Upload */}
               <label>
                 <GrGallery className="text-2xl text-gray-600 cursor-pointer" />
                 <input
@@ -262,7 +265,6 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 />
               </label>
 
-              {/* Emoji Picker */}
               <div className="relative">
                 <BsEmojiSmile
                   className="text-2xl text-gray-600 cursor-pointer"
@@ -275,7 +277,6 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 )}
               </div>
 
-              {/* Message Input */}
               <input
                 type="text"
                 placeholder="Type message..."
@@ -285,7 +286,6 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 onKeyDown={(e) => e.key === "Enter" && sendPrivateMessage()}
               />
 
-              {/* Send Button */}
               <button
                 onClick={sendPrivateMessage}
                 className="bg-blue-500 rounded-[200px] text-white px-4 py-2"
@@ -293,7 +293,6 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 <RiSendPlaneFill className="text-2xl" />
               </button>
 
-              {/* Preview Image */}
               {previewImage && (
                 <div className="absolute bottom-16 left-4">
                   <img
@@ -304,7 +303,6 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
                 </div>
               )}
 
-              {/* Preview Video */}
               {previewVideo && (
                 <div className="absolute bottom-16 left-4">
                   <video
@@ -322,4 +320,7 @@ const PrivateChat = ({ userDetails, setSelectedUserVideo }) => {
   );
 };
 
-export default PrivateChat; 
+export default PrivateChat;
+
+
+

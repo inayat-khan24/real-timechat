@@ -109,82 +109,90 @@ try {
 }
 
 // Update User Profile
+// export const updateprofile = async (req, res) => {
+//   const userId = req.params.id;
+//   const { username, name,bios } = req.body;
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     // Update fields
+//     if (username) user.username = username;
+//     if (name) user.name = name;
+//     if (bios) user.bios = bios
+
+//     // ✅ Handle profilePic upload
+//     if (req.file) {
+//       user.profilePic = req.file.filename;
+//     }
+
+//     const updatedUser = await user.save();
+
+//     res.status(200).json({
+//       message: "Profile updated successfully",
+//       user: {
+//         id: updatedUser._id,
+//         username: updatedUser.username,
+//         name: updatedUser.name,
+//         bios : updatedUser.bios,
+//         profilePic: updatedUser.profilePic,
+//         email: updatedUser.email,
+//       }
+//     });
+//   } catch (error) {
+//     console.error("Update Error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
 export const updateprofile = async (req, res) => {
   const userId = req.params.id;
-  const { username, name,bios } = req.body;
+  const { username, name, bios } = req.body;
+
+  console.log("📤 Uploaded File:", req.file); // Debug
 
   try {
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
-    // Update fields
     if (username) user.username = username;
     if (name) user.name = name;
-    if (bios) user.bios = bios
+    if (bios) user.bios = bios;
 
-    // ✅ Handle profilePic upload
     if (req.file) {
-      user.profilePic = req.file.filename;
+      user.profilePic = req.file.path; // Cloudinary ka secure_url
     }
 
     const updatedUser = await user.save();
 
-    res.status(200).json({
+    return res.status(200).json({
+      success: true,
       message: "Profile updated successfully",
       user: {
         id: updatedUser._id,
         username: updatedUser.username,
         name: updatedUser.name,
-        bios : updatedUser.bios,
+        bios: updatedUser.bios,
         profilePic: updatedUser.profilePic,
         email: updatedUser.email,
       }
     });
   } catch (error) {
-    console.error("Update Error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("❌ Update Error:", error); // Full object log
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
+      error: error.stack
+    });
   }
 };
 
-// forgot password
-// export const forgotpassword = async (req,res)=>{
-//   const { email } = req.body;
 
-//   if (!email){
-//     res.status(404).json({message:"email is required"})
-//   }
 
-//   const user = await User.findOne({ email });
-  
-//   if (!user) return res.status(404).json({ message: "User not found" });
 
-//   const token = crypto.randomBytes(32).toString("hex");
-//   user.resetToken = token;
-//   user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
-//   await user.save();
-
-//   const resetLink = `http://localhost:5173/reset-password/${token}`;
-
-//   // Send email
-//   try {
-//     await transporter.sendMail({
-//       from: "pcmy1092@gmail.com",
-//       to: user.email,
-//       subject: "Password Reset Request",
-//       html: `
-//         <h2>Reset your password</h2>
-//         <p>Click the link below to reset your password:</p>
-//         <a href="${resetLink}">${resetLink}</a>
-//         <p>This link will expire in 1 hour.</p>
-//       `,
-//     });
-
-//     res.json({ message: "Reset link sent to your email" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Failed to send email" });
-//   }
-// }
 
 
 

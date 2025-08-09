@@ -17,7 +17,7 @@ setLoading(false)
   }, []);
 
  const profile = profilePic
-    ? `http://localhost:5000/uploads/${profilePic}`
+    ? `${profilePic}`
     : 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3';
 
 //   const profilePic = "https://i.pravatar.cc/150?img=5"; // or your uploaded one
