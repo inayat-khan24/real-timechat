@@ -139,13 +139,22 @@ const Header = ({ userDetails, profilePic, setUser, user }) => {
             </nav>
 
             {/* Search */}
-            <div className="relative hidden sm:block" ref={searchRef}>
+            <div className="relative" ref={searchRef}>
               <button
                 onClick={() => setSearchOpen((prev) => !prev)}
-                className="text-2xl text-gray-600 hover:text-black focus:outline-none"
+                className="text-2xl text-gray-600 hover:text-black sm:hidden focus:outline-none"
               >
                 <IoSearch />
               </button>
+
+              <div className="relative hidden sm:block">
+                <button
+                  onClick={() => setSearchOpen((prev) => !prev)}
+                  className="text-2xl text-gray-600 hover:text-black focus:outline-none"
+                >
+                  <IoSearch />
+                </button>
+              </div>
 
               {searchOpen && (
                 <div className="absolute left-1/2 -translate-x-1/2 top-14 w-80 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl shadow-2xl p-4 z-50 animate-fade-in-down">
@@ -192,14 +201,6 @@ const Header = ({ userDetails, profilePic, setUser, user }) => {
                 </div>
               )}
             </div>
-
-            {/* Mobile Search Icon */}
-            <button
-              onClick={() => setSearchOpen((prev) => !prev)}
-              className="text-2xl text-gray-600 hover:text-black sm:hidden focus:outline-none"
-            >
-              <IoSearch />
-            </button>
           </div>
 
           {/* Right: User Profile & Menu */}
